@@ -1,0 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import 'tailwindcss';
+@plugin 'daisyui';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Map our legacy custom classes to DaisyUI so nothing breaks */
+.glass-card {
+  @apply card bg-base-100 shadow-sm border border-base-200 transition-shadow hover:shadow-md;
+}
+
+.glass-panel {
+  @apply bg-base-100 border-r border-base-200 shadow-sm;
+}
+
+.btn-primary {
+  @apply btn btn-primary;
+}
+
+.btn-secondary {
+  @apply btn btn-outline;
+}
+
+.btn-danger {
+  @apply btn btn-error;
+}
+
+.btn-success {
+  @apply btn btn-success;
+}
+
+/* Form inputs mapping */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  @apply input input-bordered w-full;
+}
+
+label {
+  @apply label text-sm font-medium text-base-content;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-base-200;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-base-300 rounded-md;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-base-content/20;
+}
