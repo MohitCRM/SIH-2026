@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, UserCircle, Building2 } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const RoleSelector = () => {
   const navigate = useNavigate();
@@ -9,6 +10,9 @@ const RoleSelector = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-base-200">
+      <div className="fixed top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="max-w-4xl w-full">
         <div className="text-center mb-12 fade-in">
           <div className="mb-6 mx-auto w-20 h-20 border-4 border-base-300 rounded-full flex items-center justify-center text-base-content/50">

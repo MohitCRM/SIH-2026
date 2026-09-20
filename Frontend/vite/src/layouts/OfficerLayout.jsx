@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, CheckCircle, FileText, LogOut, Building, ShieldCheck } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const OfficerLayout = () => {
   const navigate = useNavigate();
@@ -26,8 +27,11 @@ const OfficerLayout = () => {
             <span className="badge badge-outline badge-sm font-bold opacity-70 mr-2">GOV</span>
             <span className="text-sm font-semibold text-base-content/70">Government of India</span>
           </div>
-          <div className="flex-none gap-2 text-sm font-medium text-base-content/60">
-            <Building size={16} /> Ministry of Tribal Affairs
+          <div className="flex-none flex items-center gap-3 text-sm font-medium text-base-content/60">
+            <div className="hidden sm:flex items-center gap-2">
+              <Building size={16} /> Ministry of Tribal Affairs
+            </div>
+            <LanguageSwitcher />
           </div>
         </div>
 
