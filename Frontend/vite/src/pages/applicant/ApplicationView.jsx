@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FileText, CheckCircle, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 
 const ApplicationView = () => {
   const { applicationId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +15,7 @@ const ApplicationView = () => {
     const fetchApplication = async () => {
       try {
         const response = await fetch(`/api/applicant/application/${applicationId}`);
-        if (!response.ok) throw new Error('Failed to fetch application details');
+        if (!response.ok) throw new Error(t('verificationView.errors.fetchFailed'));
         const data = await response.json();
         setApplication(data);
       } catch (err) {
@@ -39,7 +41,7 @@ const ApplicationView = () => {
     return (
       <div className="flex flex-col items-center justify-center p-20 text-base-content/50">
         <Loader2 className="animate-spin mb-4 text-primary" size={40} />
-        <p className="text-lg">Loading application details...</p>
+        <p className="text-lg">{t('applicationView.loading')}</p>
       </div>
     );
   }
@@ -48,11 +50,11 @@ const ApplicationView = () => {
     return (
       <div className="p-8 max-w-6xl mx-auto">
         <button onClick={() => navigate(-1)} className="btn btn-ghost mb-6">
-          <ArrowLeft size={20} /> Back
+          <ArrowLeft size={20} /> {t('meritListView.back')}
         </button>
         <div className="alert alert-error shadow-sm">
           <AlertCircle size={24}/>
-          <span>Error: {error || "Application not found"}</span>
+          <span>{t('verificationView.errors.errorPrefix')}: {error || t('verificationView.errors.notFound')}</span>
         </div>
       </div>
     );
@@ -62,12 +64,12 @@ const ApplicationView = () => {
     <div className="p-8 max-w-6xl mx-auto fade-in">
       
       <button onClick={() => navigate(-1)} className="btn btn-ghost btn-sm mb-6 gap-2">
-        <ArrowLeft size={16} /> Back to Applications
+        <ArrowLeft size={16} /> {t('applicationView.backToApplications')}
       </button>
 
       <header className="mb-8 border-b border-base-200 pb-6 flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold mb-2 text-primary">Document Details</h1>
+          <h1 className="text-3xl font-bold mb-2 text-primary">{t('applicationView.header.title')}</h1>
           <p className="text-base-content/60 font-mono text-sm font-semibold">{application.applicationId}</p>
         </div>
         <div>
@@ -77,32 +79,32 @@ const ApplicationView = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
         <div className="card bg-base-100 p-6 border border-base-200 shadow-sm">
-          <h3 className="text-sm text-base-content/40 uppercase font-bold mb-4 tracking-wider">Scheme Information</h3>
-          <p className="font-semibold text-lg text-base-content">{application.schemeId?.name || 'Unknown Scheme'}</p>
-          <p className="text-sm text-base-content/60 mt-2">Applied on: {new Date(application.createdAt).toLocaleDateString()}</p>
+          <h3 className="text-sm text-base-content/40 uppercase font-bold mb-4 tracking-wider">{t('applicationView.schemeInfo.heading')}</h3>
+          <p className="font-semibold text-lg text-base-content">{application.schemeId?.name || t('common.unknownScheme')}</p>
+          <p className="text-sm text-base-content/60 mt-2">{t('applicationView.schemeInfo.appliedOn', { date: new Date(application.createdAt).toLocaleDateString() })}</p>
         </div>
 
         <div className="card bg-base-100 p-6 border border-base-200 shadow-sm">
-           <h3 className="text-sm text-base-content/40 uppercase font-bold mb-4 tracking-wider">Financial Details</h3>
+           <h3 className="text-sm text-base-content/40 uppercase font-bold mb-4 tracking-wider">{t('applicationView.financialDetails.heading')}</h3>
            <div className="grid grid-cols-2 gap-4">
              <div>
-               <p className="text-xs text-base-content/60 font-semibold mb-1">Declared Income</p>
+               <p className="text-xs text-base-content/60 font-semibold mb-1">{t('applicationView.financialDetails.declaredIncomeLabel')}</p>
                <p className="font-bold text-success text-lg">
-                  {application.submittedData?.declaredFamilyIncome 
-                    ? `₹${application.submittedData.declaredFamilyIncome.toLocaleString()}` 
-                    : 'N/A'}
+                  {application.submittedData?.declaredFamilyIncome
+                    ? `₹${application.submittedData.declaredFamilyIncome.toLocaleString()}`
+                    : t('common.notAvailable')}
                </p>
              </div>
              <div>
-               <p className="text-xs text-base-content/60 font-semibold mb-1">Bank Account</p>
-               <p className="font-mono text-base-content font-bold">{application.submittedData?.bankDetails?.accountNumber || 'N/A'}</p>
+               <p className="text-xs text-base-content/60 font-semibold mb-1">{t('applicationView.financialDetails.bankAccountLabel')}</p>
+               <p className="font-mono text-base-content font-bold">{application.submittedData?.bankDetails?.accountNumber || t('common.notAvailable')}</p>
              </div>
            </div>
         </div>
       </div>
 
       <div className="card bg-base-100 p-6 border border-base-200 shadow-sm">
-        <h3 className="text-lg text-primary font-bold border-b border-base-200 pb-3 mb-6">Uploaded Documents</h3>
+        <h3 className="text-lg text-primary font-bold border-b border-base-200 pb-3 mb-6">{t('applicationView.uploadedDocuments.heading')}</h3>
         {application.documents && application.documents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {application.documents.map((doc, idx) => (
@@ -113,13 +115,13 @@ const ApplicationView = () => {
                   <p className="text-sm font-bold text-base-content mb-1">{doc.documentType.replace(/_/g, ' ')}</p>
                   <p className="text-xs font-semibold text-base-content/50 mb-4">{doc.verificationStatus}</p>
                   <a href={doc.fileUrl} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm btn-block mt-auto">
-                    View File
+                    {t('applicationView.uploadedDocuments.viewFile')}
                   </a>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-base-content/50 italic text-center py-8">No documents have been uploaded for this application yet.</p>
+          <p className="text-base-content/50 italic text-center py-8">{t('applicationView.uploadedDocuments.empty')}</p>
         )}
       </div>
 

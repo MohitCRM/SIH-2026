@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FileText, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 
 const MOCK_APPLICANT_ID = "64a7c2f1b2a3d4e5f6a7b8c9"; // Using the same mock applicant ID as ApplicationFlow
 
 const Applications = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,7 +20,7 @@ const Applications = () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/applicant/applications/${MOCK_APPLICANT_ID}`);
-      if (!response.ok) throw new Error('Failed to fetch applications');
+      if (!response.ok) throw new Error(t('applicantApplications.errors.fetchFailed'));
       const data = await response.json();
       setApplications(data);
     } catch (err) {
@@ -29,13 +31,13 @@ const Applications = () => {
   };
 
   const handleSubmitDraft = async (applicationId) => {
-    if(!window.confirm("Are you sure you want to final submit this application?")) return;
+    if(!window.confirm(t('applicantApplications.confirmFinalSubmit'))) return;
     try {
       const response = await fetch(`/api/applicant/applications/${applicationId}/submit`, {
         method: 'POST'
       });
-      if (!response.ok) throw new Error('Failed to submit application');
-      alert('Application submitted successfully!');
+      if (!response.ok) throw new Error(t('applicantApplications.errors.submitFailed'));
+      alert(t('applicantApplications.alertSubmitSuccess'));
       fetchApplications(); // Refresh list
     } catch (err) {
       alert(err.message);
@@ -58,18 +60,18 @@ const Applications = () => {
   return (
     <div className="p-8 max-w-6xl mx-auto fade-in">
       <header className="mb-10 border-b border-base-200 pb-6">
-        <h1 className="text-3xl font-bold mb-1 text-primary">Applications & Drafts</h1>
-        <p className="text-base-content/60 font-medium">Manage your saved drafts and track the status of your submitted applications.</p>
+        <h1 className="text-3xl font-bold mb-1 text-primary">{t('applicantApplications.header.title')}</h1>
+        <p className="text-base-content/60 font-medium">{t('applicantApplications.header.subtitle')}</p>
       </header>
 
       {loading ? (
         <div className="flex flex-col items-center justify-center p-12 text-base-content/50">
           <Loader2 className="animate-spin mb-4 text-primary" size={32} />
-          <p>Loading your applications...</p>
+          <p>{t('applicantApplications.loading')}</p>
         </div>
       ) : error ? (
         <div className="alert alert-error shadow-lg">
-          <AlertCircle size={24} /> Error: {error}
+          <AlertCircle size={24} /> {t('verificationView.errors.errorPrefix')}: {error}
         </div>
       ) : (
         <>
@@ -77,37 +79,37 @@ const Applications = () => {
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="text-primary" size={24} />
-              <h2 className="text-xl font-bold text-base-content">Saved Drafts</h2>
+              <h2 className="text-xl font-bold text-base-content">{t('applicantApplications.drafts.heading')}</h2>
             </div>
-            
+
             {drafts.length > 0 ? (
               <div className="card bg-base-100 border border-base-200 shadow-sm overflow-x-auto">
                 <table className="table table-zebra w-full">
                   <thead>
                     <tr className="bg-base-200 text-base-content/70">
-                      <th>Application ID</th>
-                      <th>Scheme Name</th>
-                      <th>Last Saved</th>
-                      <th>Status</th>
-                      <th>Action</th>
+                      <th>{t('applicationFlow.stage4.applicationIdLabel')}</th>
+                      <th>{t('ministryDashboard.schemesTable.colScheme')}</th>
+                      <th>{t('applicantApplications.drafts.colLastSaved')}</th>
+                      <th>{t('meritListView.table.status')}</th>
+                      <th>{t('officerDashboard.table.colAction')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {drafts.map(app => (
                       <tr key={app._id} className="hover">
                         <td className="font-mono text-sm text-primary font-semibold">{app.applicationId}</td>
-                        <td className="text-sm font-medium text-base-content">{app.schemeId ? app.schemeId.name : 'Unknown Scheme'}</td>
+                        <td className="text-sm font-medium text-base-content">{app.schemeId ? app.schemeId.name : t('common.unknownScheme')}</td>
                         <td className="text-sm text-base-content/60 flex items-center gap-1">
-                          <Clock size={14}/> 
+                          <Clock size={14}/>
                           {new Date(app.updatedAt).toLocaleDateString()}
                         </td>
                         <td>{getStatusBadge(app.status)}</td>
                         <td className="flex gap-3">
                           <button onClick={() => navigate(`/applicant/application/${app.applicationId}`)} className="btn btn-sm btn-ghost text-primary gap-1">
-                            <FileText size={16} /> Open Document
+                            <FileText size={16} /> {t('applicantApplications.drafts.openDocument')}
                           </button>
                           <button onClick={() => handleSubmitDraft(app.applicationId)} className="btn btn-sm btn-success text-success-content">
-                            Final Submit
+                            {t('applicationFlow.stage4.finalSubmit')}
                           </button>
                         </td>
                       </tr>
@@ -116,7 +118,7 @@ const Applications = () => {
                 </table>
               </div>
             ) : (
-              <div className="card bg-base-100 border border-base-200 p-8 text-center text-base-content/50">No saved drafts found.</div>
+              <div className="card bg-base-100 border border-base-200 p-8 text-center text-base-content/50">{t('applicantApplications.drafts.empty')}</div>
             )}
           </div>
 
@@ -124,31 +126,31 @@ const Applications = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <CheckCircle className="text-success" size={24} />
-              <h2 className="text-xl font-bold text-base-content">Submitted Applications</h2>
+              <h2 className="text-xl font-bold text-base-content">{t('applicantApplications.submitted.heading')}</h2>
             </div>
-            
+
             {submitted.length > 0 ? (
               <div className="card bg-base-100 border border-base-200 shadow-sm overflow-x-auto">
                 <table className="table table-zebra w-full">
                   <thead>
                     <tr className="bg-base-200 text-base-content/70">
-                      <th>Application ID</th>
-                      <th>Scheme Name</th>
-                      <th>Date Applied</th>
-                      <th>Current Status</th>
-                      <th>Action</th>
+                      <th>{t('applicationFlow.stage4.applicationIdLabel')}</th>
+                      <th>{t('ministryDashboard.schemesTable.colScheme')}</th>
+                      <th>{t('applicantApplications.submitted.colDateApplied')}</th>
+                      <th>{t('applicantApplications.submitted.colCurrentStatus')}</th>
+                      <th>{t('officerDashboard.table.colAction')}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {submitted.map(app => (
                       <tr key={app._id} className="hover">
                         <td className="font-mono text-sm text-primary font-semibold">{app.applicationId}</td>
-                        <td className="text-sm font-medium text-base-content">{app.schemeId ? app.schemeId.name : 'Unknown Scheme'}</td>
+                        <td className="text-sm font-medium text-base-content">{app.schemeId ? app.schemeId.name : t('common.unknownScheme')}</td>
                         <td className="text-sm text-base-content/60">{new Date(app.createdAt).toLocaleDateString()}</td>
                         <td>{getStatusBadge(app.status)}</td>
                         <td>
                           <button onClick={() => navigate(`/applicant/application/${app.applicationId}`)} className="btn btn-sm btn-ghost gap-1">
-                            <FileText size={16} /> View Document
+                            <FileText size={16} /> {t('applicantApplications.submitted.viewDocument')}
                           </button>
                         </td>
                       </tr>
@@ -157,7 +159,7 @@ const Applications = () => {
                 </table>
               </div>
             ) : (
-              <div className="card bg-base-100 border border-base-200 p-8 text-center text-base-content/50">No submitted applications found.</div>
+              <div className="card bg-base-100 border border-base-200 p-8 text-center text-base-content/50">{t('applicantApplications.submitted.empty')}</div>
             )}
           </div>
         </>
