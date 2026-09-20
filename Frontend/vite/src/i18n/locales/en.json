@@ -1,0 +1,322 @@
+{
+  "applicantApplications": {
+    "header": {
+      "title": "Applications & Drafts",
+      "subtitle": "Manage your saved drafts and track the status of your submitted applications."
+    },
+    "loading": "Loading your applications...",
+    "errors": {
+      "fetchFailed": "Failed to fetch applications",
+      "submitFailed": "Failed to submit application"
+    },
+    "confirmFinalSubmit": "Are you sure you want to final submit this application?",
+    "alertSubmitSuccess": "Application submitted successfully!",
+    "drafts": {
+      "heading": "Saved Drafts",
+      "colLastSaved": "Last Saved",
+      "openDocument": "Open Document",
+      "empty": "No saved drafts found."
+    },
+    "submitted": {
+      "heading": "Submitted Applications",
+      "colDateApplied": "Date Applied",
+      "colCurrentStatus": "Current Status",
+      "viewDocument": "View Document",
+      "empty": "No submitted applications found."
+    }
+  },
+  "applicationView": {
+    "loading": "Loading application details...",
+    "backToApplications": "Back to Applications",
+    "header": { "title": "Document Details" },
+    "schemeInfo": {
+      "heading": "Scheme Information",
+      "appliedOn": "Applied on: {{date}}"
+    },
+    "financialDetails": {
+      "heading": "Financial Details",
+      "declaredIncomeLabel": "Declared Income",
+      "bankAccountLabel": "Bank Account"
+    },
+    "uploadedDocuments": {
+      "heading": "Uploaded Documents",
+      "viewFile": "View File",
+      "empty": "No documents have been uploaded for this application yet."
+    }
+  },
+  "meritListView": {
+    "loading": "Compiling Merit List...",
+    "errors": {
+      "fetchFailed": "Failed to fetch merit list. Scheme might not exist or no applications available.",
+      "noData": "No data available.",
+      "selectAtLeastOne": "Please select at least one application to approve.",
+      "approveFailed": "Failed to approve applications"
+    },
+    "confirmBulkApprove": "Are you sure you want to approve {{count}} applications and generate their sanction letters? This action will disburse funds via DBT.",
+    "back": "Back",
+    "header": {
+      "title": "Merit List: {{schemeName}}",
+      "subtitle": "Displaying applications pre-verified and approved by State Nodal Officers."
+    },
+    "availableSlots": "Available Slots",
+    "primarySelection": {
+      "title": "Primary Selection List",
+      "subtitle": "Ranked by System Calculated Merit Score"
+    },
+    "bulkApprove": "Bulk Approve & Disburse ({{count}})",
+    "table": {
+      "rank": "Rank",
+      "meritScore": "Merit Score",
+      "status": "Status",
+      "nodalVerified": "Nodal Verified"
+    },
+    "empty": {
+      "title": "No Pending Approvals",
+      "desc": "There are no Nodal Approved applications waiting for Ministry sanction for this scheme."
+    }
+  },
+  "applicantDashboard": {
+    "header": {
+      "title": "Applicant Dashboard",
+      "subtitle": "Welcome! Find and apply for scholarships matching your profile."
+    },
+    "schemesHeading": "Available Schemes (2026-2027)",
+    "coverageLabel": "Coverage",
+    "topClass": {
+      "status": "Active",
+      "title": "Top Class Education Scheme for ST Students",
+      "description": "Financial assistance for ST students pursuing higher education in premier institutes (IITs, IIMs, NITs) across India.",
+      "coverageValue": "Up to ₹2,00,000 / yr",
+      "applyNow": "Apply Now"
+    },
+    "nos": {
+      "status": "Opening Soon",
+      "description": "Financial assistance for ST students to pursue Masters and Ph.D in approved foreign universities.",
+      "coverageValue": "Travel & Tuition",
+      "applyLater": "Apply Later"
+    },
+    "myApplications": {
+      "heading": "My Applications",
+      "emptyTitle": "No applications submitted",
+      "emptyDesc": "When you apply for a scheme, you can track its progress here."
+    }
+  },
+  "common": {
+    "govBadge": "GOV",
+    "ministryOfTribalAffairs": "Ministry of Tribal Affairs",
+    "brandName": "MoTA",
+    "dashboard": "Dashboard",
+    "signOut": "Sign Out",
+    "unknownStudent": "Unknown Student",
+    "unknownScheme": "Unknown Scheme",
+    "notAvailable": "N/A"
+  },
+  "officerDashboard": {
+    "loading": "Loading assigned applications...",
+    "errors": { "fetchFailed": "Failed to fetch pending applications" },
+    "header": {
+      "title": "Nodal Officer Dashboard",
+      "subtitle": "Review and verify student applications for assigned schemes."
+    },
+    "stats": {
+      "pendingReview": "Pending Review",
+      "pendingReviewDesc": "Requires immediate action",
+      "approvedToday": "Approved Today",
+      "approvedTodayDesc": "Applications processed",
+      "assignedInstitutes": "Assigned Institutes",
+      "assignedInstitutesDesc": "2 new institutes added"
+    },
+    "table": {
+      "title": "Applications Requiring Verification",
+      "actionItems": "{{count}} Action Items",
+      "colAppId": "App ID",
+      "colStudentName": "Student Name",
+      "colScheme": "Scheme",
+      "colSubmitted": "Submitted",
+      "colAction": "Action",
+      "verify": "Verify"
+    },
+    "empty": {
+      "title": "All Caught Up!",
+      "desc": "There are no pending applications waiting for your verification right now."
+    }
+  },
+  "verificationView": {
+    "loading": "Loading verification portal...",
+    "errors": {
+      "fetchFailed": "Failed to fetch application details",
+      "verifyFailed": "Failed to verify application",
+      "notFound": "Application not found",
+      "errorPrefix": "Error"
+    },
+    "confirmApprove": "approve and forward to Ministry",
+    "confirmDefective": "mark as defective",
+    "confirmPrompt": "Are you sure you want to {{action}}?",
+    "alertApproved": "Approved",
+    "alertDefective": "Marked Defective",
+    "alertSuccess": "Application {{status}} successfully!",
+    "header": { "title": "Verification Mode" },
+    "buttons": {
+      "markDefective": "Mark Defective",
+      "approveForward": "Approve & Forward"
+    },
+    "noDocumentSelected": "No document selected",
+    "panel": {
+      "title": "Extracted Data to Verify",
+      "identityDetails": "Identity Details",
+      "eligibilityData": "Eligibility Data",
+      "bankDetails": "Bank Details",
+      "fullNameLabel": "Full Name",
+      "declaredIncomeLabel": "Declared Family Income",
+      "accountNumberLabel": "Account Number"
+    }
+  },
+  "layouts": {
+    "applicant": {
+      "nav": {
+        "myDrafts": "My Drafts",
+        "messages": "Messages"
+      }
+    },
+    "officer": {
+      "portalLabel": "Officer Portal",
+      "nav": {
+        "approved": "Approved",
+        "reports": "Reports"
+      }
+    },
+    "ministry": {
+      "nav": {
+        "meritLists": "Merit Lists",
+        "fundDisbursement": "Fund Disbursement"
+      }
+    }
+  },
+  "applicationFlow": {
+    "header": {
+      "title": "New Application",
+      "backToDashboard": "Back to Dashboard"
+    },
+    "stepper": { "stage": "Stage {{step}}" },
+    "saveContinue": "Save & Continue",
+    "errors": {
+      "verificationFailed": "Verification Failed",
+      "submissionFailed": "Submission Failed",
+      "saveDraftFailed": "Failed to save draft"
+    },
+    "stage1": {
+      "badge": "Stage 1:",
+      "info": "Please provide your Aadhaar Number. We will instantly verify your identity against your Bank Passbook via AI OCR.",
+      "aadhaarLabel": "Aadhaar Number",
+      "aadhaarPlaceholder": "12-digit Aadhaar Number",
+      "accountLabel": "Bank Account Number",
+      "accountPlaceholder": "Account Number",
+      "ifscLabel": "IFSC Code",
+      "ifscPlaceholder": "IFSC Code",
+      "passbookLabel": "Upload Bank Passbook (First Page)",
+      "uploadPrompt": "Click to upload or drag & drop",
+      "supportedFormats": "Supported formats: PDF, JPG, PNG (Max 2MB)"
+    },
+    "stage2": {
+      "badge": "Stage 2:",
+      "info": "Upload your official certificates. The AI engine will extract and verify your eligibility criteria automatically.",
+      "casteLabel": "Upload Caste Certificate (ST/PVTG)",
+      "selectDocument": "Select Document",
+      "incomeLabel": "Upload Family Income Certificate",
+      "incomeNote": "Income must be < ₹6.0 Lakhs/annum"
+    },
+    "stage3": {
+      "badge": "Stage 3:",
+      "info": "Enter your academic details. The AI will cross-verify the institute and marks to calculate your merit score.",
+      "instituteLabel": "Notified Institute Name",
+      "selectInstitute": "Select your Institute",
+      "courseLevelLabel": "Course Level",
+      "courseNameLabel": "Course Name",
+      "courseNamePlaceholder": "e.g. B.Tech Computer Science",
+      "marksLabel": "Qualifying Exam Marks (%)",
+      "marksPlaceholder": "e.g. 92.5",
+      "marksheetLabel": "Qualifying Marksheet",
+      "bonafideLabel": "Bona fide Certificate",
+      "feeLabel": "Fee Receipt"
+    },
+    "stage4": {
+      "badge": "Stage 4:",
+      "info": "Review your details carefully. Once submitted, the application will be forwarded to the Institute Nodal Officer.",
+      "applicationIdLabel": "Application ID",
+      "instituteLabel": "Institute",
+      "courseLabel": "Course",
+      "meritScoreLabel": "System Calculated Merit Score",
+      "declaration": "I hereby declare that all information provided is true and correct. I understand that my application is liable for rejection if any discrepancies are found by the Nodal Officer.",
+      "saveAsDraft": "Save as Draft",
+      "finalSubmit": "Final Submit"
+    },
+    "stage5": {
+      "title": "Application Submitted",
+      "body": "Your application has been successfully forwarded to the Institute Nodal Officer for verification. You can track its progress on your dashboard.",
+      "returnToDashboard": "Return to Dashboard"
+    }
+  },
+  "roleSelector": {
+    "govOfIndia": "Government of India",
+    "ministryTitle": "Ministry of Tribal Affairs Scholarship Portal",
+    "emblemPlaceholder": "EMBLEM",
+    "selectPortal": "Select your portal to continue",
+    "applicant": {
+      "title": "Applicant Portal",
+      "description": "Apply for scholarships, track status, and upload documents."
+    },
+    "officer": {
+      "title": "Nodal Officer",
+      "description": "Verify applications and review uploaded documents."
+    },
+    "ministry": {
+      "title": "Ministry Portal",
+      "description": "Generate merit lists and bulk approve disbursements."
+    }
+  },
+  "ministryDashboard": {
+    "header": {
+      "title": "Ministry Administration Dashboard",
+      "subtitle": "Overview of fund disbursements and merit list approvals."
+    },
+    "stats": {
+      "totalDisbursed": "Total Funds Disbursed",
+      "totalDisbursedChange": "↑ 12% from last quarter",
+      "beneficiaries": "Beneficiaries Reached",
+      "beneficiariesDesc": "Across 28 states",
+      "successRate": "Success Rate",
+      "successRateDesc": "DBT transactions successful"
+    },
+    "schemesTable": {
+      "title": "Active Scheme Merit Lists",
+      "subtitle": "Select a scheme to review its current merit list and approve bulk disbursements.",
+      "colScheme": "Scheme Name",
+      "colDisbursed": "Total Disbursed (FY)",
+      "colPending": "Pending Action",
+      "colAction": "Action",
+      "requiresApproval": "Requires Approval",
+      "upToDate": "Up to date",
+      "viewMeritList": "View Merit List"
+    },
+    "schemes": {
+      "topClass": {
+        "name": "Top Class Education Scheme (Post Matric)"
+      },
+      "nos": {
+        "name": "National Overseas Scholarship"
+      },
+      "preMatric": {
+        "name": "Pre Matric Scholarship"
+      }
+    }
+  },
+  "institutes": {
+    "iit_bombay": "Indian Institute of Technology (IIT), Bombay",
+    "nit_trichy": "National Institute of Technology (NIT), Trichy",
+    "iim_ahmedabad": "Indian Institute of Management (IIM), Ahmedabad"
+  },
+  "courseLevels": {
+    "graduate": "Graduate",
+    "post_graduate": "Post Graduate"
+  }
+}

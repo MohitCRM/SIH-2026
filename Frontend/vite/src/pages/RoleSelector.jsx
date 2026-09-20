@@ -1,26 +1,32 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, UserCircle, Building2 } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const RoleSelector = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-base-200">
+      <div className="fixed top-4 right-4 z-10">
+        <LanguageSwitcher />
+      </div>
       <div className="max-w-4xl w-full">
         <div className="text-center mb-12 fade-in">
           <div className="mb-6 mx-auto w-20 h-20 border-4 border-base-300 rounded-full flex items-center justify-center text-base-content/50">
              {/* Placeholder for State Emblem */}
-             <span className="text-xs font-bold">EMBLEM</span>
+             <span className="text-xs font-bold">{t('roleSelector.emblemPlaceholder')}</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-base-content">
-            Government of India
+            {t('roleSelector.govOfIndia')}
           </h1>
           <h2 className="text-xl md:text-2xl font-semibold mb-4 text-primary">
-            Ministry of Tribal Affairs Scholarship Portal
+            {t('roleSelector.ministryTitle')}
           </h2>
           <p className="text-lg text-base-content/60">
-            Select your portal to continue
+            {t('roleSelector.selectPortal')}
           </p>
         </div>
 
@@ -33,9 +39,9 @@ const RoleSelector = () => {
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-primary/10 text-primary">
               <UserCircle size={32} />
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-base-content">Applicant Portal</h2>
+            <h2 className="text-xl font-semibold mb-2 text-base-content">{t('roleSelector.applicant.title')}</h2>
             <p className="text-sm text-base-content/60">
-              Apply for scholarships, track status, and upload documents.
+              {t('roleSelector.applicant.description')}
             </p>
           </button>
 
@@ -47,9 +53,9 @@ const RoleSelector = () => {
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-warning/10 text-warning">
               <ShieldCheck size={32} />
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-base-content">Nodal Officer</h2>
+            <h2 className="text-xl font-semibold mb-2 text-base-content">{t('roleSelector.officer.title')}</h2>
             <p className="text-sm text-base-content/60">
-              Verify applications and review uploaded documents.
+              {t('roleSelector.officer.description')}
             </p>
           </button>
 
@@ -61,9 +67,9 @@ const RoleSelector = () => {
             <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6 bg-accent/10 text-accent">
               <Building2 size={32} />
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-base-content">Ministry Portal</h2>
+            <h2 className="text-xl font-semibold mb-2 text-base-content">{t('roleSelector.ministry.title')}</h2>
             <p className="text-sm text-base-content/60">
-              Generate merit lists and bulk approve disbursements.
+              {t('roleSelector.ministry.description')}
             </p>
           </button>
         </div>

@@ -1,14 +1,17 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Users, CreditCard, LogOut, Building, Briefcase } from 'lucide-react';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const MinistryLayout = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const navItems = [
-    { name: 'Dashboard', path: '/ministry', icon: <LayoutDashboard size={20} />, exact: true },
-    { name: 'Merit Lists', path: '/ministry/merit-lists', icon: <Users size={20} /> },
-    { name: 'Fund Disbursement', path: '/ministry/funds', icon: <CreditCard size={20} /> },
+    { name: 'Dashboard', label: t('common.dashboard'), path: '/ministry', icon: <LayoutDashboard size={20} />, exact: true },
+    { name: 'Merit Lists', label: t('layouts.ministry.nav.meritLists'), path: '/ministry/merit-lists', icon: <Users size={20} /> },
+    { name: 'Fund Disbursement', label: t('layouts.ministry.nav.fundDisbursement'), path: '/ministry/funds', icon: <CreditCard size={20} /> },
   ];
 
   return (
@@ -23,11 +26,14 @@ const MinistryLayout = () => {
             <label htmlFor="my-drawer-2" className="btn btn-square btn-ghost lg:hidden">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-5 h-5 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </label>
-            <span className="badge badge-outline badge-sm font-bold opacity-70 mr-2">GOV</span>
-            <span className="text-sm font-semibold text-base-content/70">Government of India</span>
+            <span className="badge badge-outline badge-sm font-bold opacity-70 mr-2">{t('common.govBadge')}</span>
+            <span className="text-sm font-semibold text-base-content/70">{t('roleSelector.govOfIndia')}</span>
           </div>
-          <div className="flex-none gap-2 text-sm font-medium text-base-content/60">
-            <Building size={16} /> Ministry of Tribal Affairs
+          <div className="flex-none flex items-center gap-3 text-sm font-medium text-base-content/60">
+            <div className="hidden sm:flex items-center gap-2">
+              <Building size={16} /> {t('common.ministryOfTribalAffairs')}
+            </div>
+            <LanguageSwitcher />
           </div>
         </div>
 
@@ -46,8 +52,8 @@ const MinistryLayout = () => {
               <Briefcase size={22} />
             </div>
             <div>
-              <h2 className="font-bold text-lg leading-tight text-neutral-content">MoTA</h2>
-              <p className="text-xs text-accent font-bold uppercase tracking-wider">Ministry Portal</p>
+              <h2 className="font-bold text-lg leading-tight text-neutral-content">{t('common.brandName')}</h2>
+              <p className="text-xs text-accent font-bold uppercase tracking-wider">{t('roleSelector.ministry.title')}</p>
             </div>
           </div>
 
@@ -60,7 +66,7 @@ const MinistryLayout = () => {
                   className={({ isActive }) => isActive ? 'active bg-accent text-accent-content focus:bg-accent focus:text-accent-content font-medium py-3' : 'font-medium py-3 text-neutral-content/70 hover:text-neutral-content'}
                 >
                   {item.icon}
-                  {item.name}
+                  {item.label}
                 </NavLink>
               </li>
             ))}
@@ -72,7 +78,7 @@ const MinistryLayout = () => {
               className="text-error hover:bg-error/20 hover:text-error font-medium py-3"
             >
               <LogOut size={20} />
-              Sign Out
+              {t('common.signOut')}
             </button>
           </li>
         </ul>
