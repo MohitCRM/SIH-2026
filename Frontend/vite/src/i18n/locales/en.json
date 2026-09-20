@@ -1,0 +1,70 @@
+{
+  "applicationFlow": {
+    "stage3": {
+      "selectInstitute": "Select your Institute"
+    }
+  },
+  "roleSelector": {
+    "govOfIndia": "Government of India",
+    "ministryTitle": "Ministry of Tribal Affairs Scholarship Portal",
+    "emblemPlaceholder": "EMBLEM",
+    "selectPortal": "Select your portal to continue",
+    "applicant": {
+      "title": "Applicant Portal",
+      "description": "Apply for scholarships, track status, and upload documents."
+    },
+    "officer": {
+      "title": "Nodal Officer",
+      "description": "Verify applications and review uploaded documents."
+    },
+    "ministry": {
+      "title": "Ministry Portal",
+      "description": "Generate merit lists and bulk approve disbursements."
+    }
+  },
+  "ministryDashboard": {
+    "header": {
+      "title": "Ministry Administration Dashboard",
+      "subtitle": "Overview of fund disbursements and merit list approvals."
+    },
+    "stats": {
+      "totalDisbursed": "Total Funds Disbursed",
+      "totalDisbursedChange": "↑ 12% from last quarter",
+      "beneficiaries": "Beneficiaries Reached",
+      "beneficiariesDesc": "Across 28 states",
+      "successRate": "Success Rate",
+      "successRateDesc": "DBT transactions successful"
+    },
+    "schemesTable": {
+      "title": "Active Scheme Merit Lists",
+      "subtitle": "Select a scheme to review its current merit list and approve bulk disbursements.",
+      "colScheme": "Scheme Name",
+      "colDisbursed": "Total Disbursed (FY)",
+      "colPending": "Pending Action",
+      "colAction": "Action",
+      "requiresApproval": "Requires Approval",
+      "upToDate": "Up to date",
+      "viewMeritList": "View Merit List"
+    },
+    "schemes": {
+      "topClass": {
+        "name": "Top Class Education Scheme (Post Matric)"
+      },
+      "nos": {
+        "name": "National Overseas Scholarship"
+      },
+      "preMatric": {
+        "name": "Pre Matric Scholarship"
+      }
+    }
+  },
+  "institutes": {
+    "iit_bombay": "Indian Institute of Technology (IIT), Bombay",
+    "nit_trichy": "National Institute of Technology (NIT), Trichy",
+    "iim_ahmedabad": "Indian Institute of Management (IIM), Ahmedabad"
+  },
+  "courseLevels": {
+    "graduate": "Graduate",
+    "post_graduate": "Post Graduate"
+  }
+}

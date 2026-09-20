@@ -1,0 +1,70 @@
+{
+  "applicationFlow": {
+    "stage3": {
+      "selectInstitute": "अपना संस्थान चुनें"
+    }
+  },
+  "roleSelector": {
+    "govOfIndia": "भारत सरकार",
+    "ministryTitle": "जनजातीय कार्य मंत्रालय छात्रवृत्ति पोर्टल",
+    "emblemPlaceholder": "प्रतीक",
+    "selectPortal": "जारी रखने के लिए अपना पोर्टल चुनें",
+    "applicant": {
+      "title": "आवेदक पोर्टल",
+      "description": "छात्रवृत्ति के लिए आवेदन करें, स्थिति ट्रैक करें और दस्तावेज़ अपलोड करें।"
+    },
+    "officer": {
+      "title": "नोडल अधिकारी",
+      "description": "आवेदनों की जांच करें और अपलोड किए गए दस्तावेज़ों की समीक्षा करें।"
+    },
+    "ministry": {
+      "title": "मंत्रालय पोर्टल",
+      "description": "मेरिट सूचियां तैयार करें और थोक वितरण को मंजूरी दें।"
+    }
+  },
+  "ministryDashboard": {
+    "header": {
+      "title": "मंत्रालय प्रशासन डैशबोर्ड",
+      "subtitle": "निधि वितरण और मेरिट सूची अनुमोदन का अवलोकन।"
+    },
+    "stats": {
+      "totalDisbursed": "कुल वितरित निधि",
+      "totalDisbursedChange": "↑ पिछली तिमाही से 12%",
+      "beneficiaries": "लाभार्थियों तक पहुंच",
+      "beneficiariesDesc": "28 राज्यों में",
+      "successRate": "सफलता दर",
+      "successRateDesc": "सफल डीबीटी लेनदेन"
+    },
+    "schemesTable": {
+      "title": "सक्रिय योजना मेरिट सूचियां",
+      "subtitle": "वर्तमान मेरिट सूची की समीक्षा करने और थोक वितरण को मंजूरी देने के लिए एक योजना चुनें।",
+      "colScheme": "योजना का नाम",
+      "colDisbursed": "कुल वितरित (वित्तीय वर्ष)",
+      "colPending": "लंबित कार्रवाई",
+      "colAction": "कार्रवाई",
+      "requiresApproval": "अनुमोदन आवश्यक",
+      "upToDate": "अद्यतन",
+      "viewMeritList": "मेरिट सूची देखें"
+    },
+    "schemes": {
+      "topClass": {
+        "name": "टॉप क्लास शिक्षा योजना (पोस्ट मैट्रिक)"
+      },
+      "nos": {
+        "name": "राष्ट्रीय विदेश छात्रवृत्ति"
+      },
+      "preMatric": {
+        "name": "प्री मैट्रिक छात्रवृत्ति"
+      }
+    }
+  },
+  "institutes": {
+    "iit_bombay": "भारतीय प्रौद्योगिकी संस्थान (IIT), बॉम्बे",
+    "nit_trichy": "राष्ट्रीय प्रौद्योगिकी संस्थान (NIT), तिरुचिरापल्ली",
+    "iim_ahmedabad": "भारतीय प्रबंधन संस्थान (IIM), अहमदाबाद"
+  },
+  "courseLevels": {
+    "graduate": "स्नातक",
+    "post_graduate": "स्नातकोत्तर"
+  }
+}

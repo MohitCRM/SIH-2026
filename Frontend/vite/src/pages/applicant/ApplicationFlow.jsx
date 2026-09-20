@@ -1,9 +1,22 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ChevronRight, UploadCloud, Loader2, Info } from 'lucide-react';
 
 const MOCK_APPLICANT_ID = "64a7c2f1b2a3d4e5f6a7b8c9"; // Mock user ID
 const MOCK_SCHEME_ID = "64a7d3a2b3c4d5e6f7a8b9c0"; // Mock scheme ID
+
+// Canonical English labels sent to the backend / Sanction Letter, independent
+// of whichever UI language the applicant filled the form in.
+const INSTITUTE_LABELS = {
+  iit_bombay: 'Indian Institute of Technology (IIT), Bombay',
+  nit_trichy: 'National Institute of Technology (NIT), Trichy',
+  iim_ahmedabad: 'Indian Institute of Management (IIM), Ahmedabad'
+};
+const COURSE_LEVEL_LABELS = {
+  graduate: 'Graduate',
+  post_graduate: 'Post Graduate'
+};
 
 const inputClass = "input input-bordered w-full";
 const labelClass = "label text-sm font-bold text-base-content";
@@ -11,6 +24,7 @@ const labelClass = "label text-sm font-bold text-base-content";
 const ApplicationFlow = () => {
   const { schemeId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [currentStage, setCurrentStage] = useState(1);
   const [applicationId, setApplicationId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +35,7 @@ const ApplicationFlow = () => {
     accountNumber: '',
     ifscCode: '',
     instituteName: '',
-    courseLevel: 'Graduate',
+    courseLevel: 'graduate',
     courseName: '',
     qualifyingMarksPercentage: ''
   });
@@ -111,8 +125,8 @@ const ApplicationFlow = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           applicationId: applicationId,
-          instituteName: formData.instituteName,
-          courseLevel: formData.courseLevel,
+          instituteName: INSTITUTE_LABELS[formData.instituteName] || formData.instituteName,
+          courseLevel: COURSE_LEVEL_LABELS[formData.courseLevel] || formData.courseLevel,
           courseName: formData.courseName,
           qualifyingMarksPercentage: parseFloat(formData.qualifyingMarksPercentage),
           qualifyingMarksheetUrl: "https://mock-s3-url.com/marksheet.pdf",
@@ -310,18 +324,18 @@ const ApplicationFlow = () => {
               <div>
                 <label className={labelClass}>Notified Institute Name <span className="text-error">*</span></label>
                 <select name="instituteName" value={formData.instituteName} onChange={handleInputChange} required className="select select-bordered w-full">
-                  <option value="" disabled>Select your Institute</option>
-                  <option value="Indian Institute of Technology (IIT), Bombay">Indian Institute of Technology (IIT), Bombay</option>
-                  <option value="National Institute of Technology (NIT), Trichy">National Institute of Technology (NIT), Trichy</option>
-                  <option value="Indian Institute of Management (IIM), Ahmedabad">Indian Institute of Management (IIM), Ahmedabad</option>
+                  <option value="" disabled>{t('applicationFlow.stage3.selectInstitute')}</option>
+                  <option value="iit_bombay">{t('institutes.iit_bombay')}</option>
+                  <option value="nit_trichy">{t('institutes.nit_trichy')}</option>
+                  <option value="iim_ahmedabad">{t('institutes.iim_ahmedabad')}</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className={labelClass}>Course Level <span className="text-error">*</span></label>
                   <select name="courseLevel" value={formData.courseLevel} onChange={handleInputChange} className="select select-bordered w-full">
-                    <option value="Graduate">Graduate</option>
-                    <option value="Post Graduate">Post Graduate</option>
+                    <option value="graduate">{t('courseLevels.graduate')}</option>
+                    <option value="post_graduate">{t('courseLevels.post_graduate')}</option>
                   </select>
                 </div>
                 <div>
@@ -389,11 +403,11 @@ const ApplicationFlow = () => {
                  </div>
                  <div className="flex justify-between border-b border-base-300 pb-3">
                    <span className="text-base-content/60 font-medium">Institute</span>
-                   <span className="font-bold text-right text-base-content">{formData.instituteName}</span>
+                   <span className="font-bold text-right text-base-content">{formData.instituteName ? t(`institutes.${formData.instituteName}`) : ''}</span>
                  </div>
                  <div className="flex justify-between border-b border-base-300 pb-3">
                    <span className="text-base-content/60 font-medium">Course</span>
-                   <span className="font-bold text-right text-base-content">{formData.courseLevel} - {formData.courseName}</span>
+                   <span className="font-bold text-right text-base-content">{t(`courseLevels.${formData.courseLevel}`)} - {formData.courseName}</span>
                  </div>
                  <div className="flex justify-between pb-1 pt-1">
                    <span className="text-base-content/60 font-medium">System Calculated Merit Score</span>
