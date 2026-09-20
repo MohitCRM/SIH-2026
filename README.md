@@ -3,7 +3,7 @@
 A modern, highly efficient, and transparent scholarship management portal built for the Ministry of Tribal Affairs (MoTA). This platform streamlines the end-to-end lifecycle of scholarship applications—from student submission to nodal verification and final fund disbursement by the Ministry.
 
 ## 🚀 Tech Stack
-* **Frontend:** React (Vite), Tailwind CSS, DaisyUI (Dracula theme for a modern, high-contrast aesthetic), Lucide Icons
+* **Frontend:** React (Vite), Tailwind CSS, DaisyUI (Dracula theme for a modern, high-contrast aesthetic), Lucide Icons, react-i18next (multi-language support)
 * **Backend:** Node.js, Express.js
 * **Database:** MongoDB (via Mongoose) - chosen for its flexible document schema to easily accommodate dynamically changing scholarship scheme requirements.
 
@@ -45,6 +45,16 @@ The top level of the hierarchy. Ministry administrators do not verify individual
   * This action simultaneously generates official Digital Sanction Letters in the database and triggers the Direct Benefit Transfer (DBT) pipeline to send funds directly to the students' bank accounts.
 
 ---
+
+## 🌐 Multi-Language Support (English / हिन्दी)
+
+The entire portal supports English and Hindi, powered by `react-i18next`.
+
+* **Switching languages:** A language toggle (showing full names — "English" / "हिन्दी", not abbreviations) is available in the navbar on every portal, and as a floating control on the role-selection screen.
+* **Persistence:** The selected language is saved to `localStorage` and restored automatically on refresh or return visits.
+* **Coverage:** All UI text is translated — navigation, dashboards, the full 4-stage applicant wizard (including the Stage 4 declaration), Officer verification dialogs, and Ministry bulk-approval/disbursement dialogs.
+* **Design note:** Application status labels (`DRAFT`, `SUBMITTED`, `DEFICIENCY`, `APPROVED`) are intentionally kept in English across both languages, since they double as internal status codes referenced elsewhere in the system.
+* **Setup:** After pulling this branch, run `npm install` in `Frontend/vite` to pick up the new `react-i18next`/`i18next` dependencies before starting the dev server.
 
 ## 🎨 UI/UX Design System
 The entire portal was refactored using **DaisyUI** on top of Tailwind CSS. We implemented a unified, sleek, modern dark theme (Dracula) across all portals. 
