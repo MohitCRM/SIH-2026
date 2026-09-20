@@ -40,7 +40,7 @@ exports.getApplicationDetails = async (req, res) => {
 exports.verifyApplication = async (req, res) => {
     try {
         const { applicationId } = req.params;
-        const { action, remarks, officerId } = req.body; 
+        const { action, remarks, officerId } = req.body;
         // Expected action: 'APPROVE', 'REJECT', 'MARK_DEFECTIVE'
 
         const application = await Application.findOne({ applicationId });
@@ -53,10 +53,10 @@ exports.verifyApplication = async (req, res) => {
         } else if (action === 'MARK_DEFECTIVE') {
             application.status = 'DEFICIENCY_FOUND'; // Sent back to the student
         } else if (action === 'REJECT') {
-             // If we want to permanently reject
-             application.status = 'DEFICIENCY_FOUND'; 
+            // If we want to permanently reject
+            application.status = 'DEFICIENCY_FOUND';
         } else {
-             return res.status(400).json({ error: "Invalid action. Use APPROVE or MARK_DEFECTIVE" });
+            return res.status(400).json({ error: "Invalid action. Use APPROVE or MARK_DEFECTIVE" });
         }
 
         // Mark the individual documents as manually verified by the human officer

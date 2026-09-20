@@ -13,7 +13,7 @@ exports.generateMeritList = async (req, res) => {
         } catch (e) {
             scheme = await Scheme.findOne({ schemeId: schemeId });
         }
-        
+
         if (!scheme) {
             return res.status(404).json({ error: "Scheme not found" });
         }
@@ -46,6 +46,8 @@ exports.generateMeritList = async (req, res) => {
     }
 };
 
+const QRCode = require('qrcode');
+
 exports.bulkApprove = async (req, res) => {
     try {
         const { applicationIds, ministryUserId } = req.body;
@@ -65,8 +67,10 @@ exports.bulkApprove = async (req, res) => {
 
         const sanctionLettersToInsert = [];
         const appIdsToUpdate = [];
+        const frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
-        applications.forEach((app, index) => {
+        for (let i = 0; i < applications.length; i++) {
+            const app = applications[i];
             appIdsToUpdate.push(app._id);
 
             // Mask the Aadhaar number (e.g., show only last 4 digits)
@@ -75,9 +79,20 @@ exports.bulkApprove = async (req, res) => {
 
             // Generate a random transaction ref for the demo
             const randomRef = Math.floor(1000000 + Math.random() * 9000000);
+            
+            const sanctionNumber = `MoTA/2026/${app.schemeId._id.toString().slice(-5).toUpperCase()}/${10000 + i}`;
+            
+            // Generate QR Code containing the verification URL
+            const verifyUrl = `${frontendBaseUrl}/verify-sanction/${encodeURIComponent(sanctionNumber)}`;
+            let qrCodeUrl = "";
+            try {
+                qrCodeUrl = await QRCode.toDataURL(verifyUrl);
+            } catch (err) {
+                console.error("Failed to generate QR Code for", sanctionNumber, err);
+            }
 
             sanctionLettersToInsert.push({
-                sanctionNumber: `MoTA/2026/${app.schemeId._id.toString().slice(-5).toUpperCase()}/${10000 + index}`,
+                sanctionNumber: sanctionNumber,
                 applicationId: app._id,
                 applicantId: app.applicantId._id,
                 schemeId: app.schemeId._id,
@@ -96,9 +111,10 @@ exports.bulkApprove = async (req, res) => {
                     paymentMode: "Direct Benefit Transfer (DBT via PFMS)",
                     beneficiaryAadhaar: maskedAadhaar,
                     transactionRefNo: `PFMS/DBT/20260918/${randomRef}`
-                }
+                },
+                qrCodeUrl: qrCodeUrl
             });
-        });
+        }
 
         // 1. Bulk insert the new Sanction Letters
         await SanctionLetter.insertMany(sanctionLettersToInsert);
@@ -106,7 +122,7 @@ exports.bulkApprove = async (req, res) => {
         // 2. Update all provided applications to 'MINISTRY_APPROVED'
         const result = await Application.updateMany(
             { _id: { $in: appIdsToUpdate } },
-            { 
+            {
                 $set: { status: 'MINISTRY_APPROVED' },
                 $push: {
                     auditTrail: {
@@ -125,6 +141,76 @@ exports.bulkApprove = async (req, res) => {
 
     } catch (error) {
         console.error("Error in bulk approval:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.verifySanction = async (req, res) => {
+    try {
+        const { sanctionNumber } = req.params;
+        const letter = await SanctionLetter.findOne({ sanctionNumber })
+            .select('-disbursementAccount.transactionRefNo'); // hide sensitive internal references publicly
+
+        if (!letter) {
+            return res.status(404).json({ error: "Invalid or forged sanction letter." });
+        }
+
+        res.status(200).json(letter);
+    } catch (error) {
+        console.error("Error verifying sanction:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.disburseFunds = async (req, res) => {
+    try {
+        const { applicationIds, ministryUserId } = req.body;
+
+        if (!applicationIds || !Array.isArray(applicationIds)) {
+            return res.status(400).json({ error: "Please provide an array of applicationIds to disburse funds to." });
+        }
+
+        const applications = await Application.find({ applicationId: { $in: applicationIds }, status: 'MINISTRY_APPROVED' });
+
+        if (applications.length === 0) {
+            return res.status(400).json({ error: "No eligible MINISTRY_APPROVED applications found." });
+        }
+
+        const appIdsToUpdate = applications.map(app => app._id);
+
+        // --- HACKATHON PFMS SIMULATION ---
+        // Simulate a 2-second delay to mimic contacting PFMS/NPCI gateway
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const pfmsRef = `PFMS/DBT/LIVE/${Date.now()}`;
+        
+        // Update Applications
+        const result = await Application.updateMany(
+            { _id: { $in: appIdsToUpdate } },
+            {
+                $set: { status: 'FUND_DISBURSED' },
+                $push: {
+                    auditTrail: {
+                        action: 'FUND_DISBURSED',
+                        performedBy: ministryUserId,
+                        remarks: `Funds successfully disbursed via PFMS. Ref: ${pfmsRef}`
+                    }
+                }
+            }
+        );
+
+        // Update Sanction Letters
+        await SanctionLetter.updateMany(
+            { applicationId: { $in: appIdsToUpdate } },
+            { $set: { status: 'DISBURSED' } }
+        );
+
+        res.status(200).json({
+            message: `Successfully disbursed funds to ${result.modifiedCount} applications.`,
+            transactionRef: pfmsRef
+        });
+
+    } catch (error) {
+        console.error("Error disbursing funds:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };

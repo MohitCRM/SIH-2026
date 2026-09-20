@@ -6,8 +6,8 @@ exports.getApplications = async (req, res) => {
     try {
         const { applicantId } = req.params;
         const applications = await Application.find({ applicantId })
-                                            .populate('schemeId', 'name')
-                                            .sort({ createdAt: -1 });
+            .populate('schemeId', 'name')
+            .sort({ createdAt: -1 });
         res.status(200).json(applications);
     } catch (error) {
         console.error("Error fetching applications:", error);
@@ -83,9 +83,9 @@ exports.submitStage1 = async (req, res) => {
         const extractedBankName = "Mohit Kumar"; // Mock extracted name
 
         if (extractedBankName.toLowerCase() !== kycData.fullName.toLowerCase()) {
-             // We can allow it but mark as deficiency, or reject outright depending on strictness
-             // Let's reject for now to enforce the rule
-             // return res.status(400).json({ error: "Name on Bank Passbook does not match Aadhaar Name" });
+            // We can allow it but mark as deficiency, or reject outright depending on strictness
+            // Let's reject for now to enforce the rule
+            // return res.status(400).json({ error: "Name on Bank Passbook does not match Aadhaar Name" });
         }
 
         // 3. Create or Update the Application Draft
@@ -93,23 +93,23 @@ exports.submitStage1 = async (req, res) => {
         let application = await Application.findOne({ applicantId, schemeId });
 
         if (!application) {
-             // Create new if it doesn't exist
-             application = new Application({
-                 applicationId: `APP-${Date.now()}`,
-                 applicantId,
-                 schemeId,
-                 status: 'DRAFT',
-                 submittedData: {
-                     bankDetails
-                 },
-                 documents: []
-             });
+            // Create new if it doesn't exist
+            application = new Application({
+                applicationId: `APP-${Date.now()}`,
+                applicantId,
+                schemeId,
+                status: 'DRAFT',
+                submittedData: {
+                    bankDetails
+                },
+                documents: []
+            });
         } else {
-             // Update existing
-             application.submittedData = {
-                 ...application.submittedData,
-                 bankDetails
-             };
+            // Update existing
+            application.submittedData = {
+                ...application.submittedData,
+                bankDetails
+            };
         }
 
         // Add or update the passbook document in the array
@@ -134,8 +134,8 @@ exports.submitStage1 = async (req, res) => {
 
         await application.save();
 
-        res.status(200).json({ 
-            message: "Stage 1 completed successfully", 
+        res.status(200).json({
+            message: "Stage 1 completed successfully",
             applicationId: application.applicationId,
             status: application.status
         });
@@ -161,7 +161,7 @@ exports.submitStage2 = async (req, res) => {
 
         // 1. Mock OCR Check for ST Certificate
         console.log(`Running OCR on ST Certificate: ${stCertificateUrl}`);
-        const extractedCategory = "ST"; 
+        const extractedCategory = "ST";
 
         if (extractedCategory !== "ST" && extractedCategory !== "PVTG") {
             return res.status(400).json({ error: "Certificate verification failed. Category is not ST or PVTG." });
@@ -172,7 +172,7 @@ exports.submitStage2 = async (req, res) => {
         const extractedIncome = 450000; // Mock extracted amount
 
         const maxFamilyIncome = application.schemeId?.eligibilityRules?.maxFamilyIncome;
-        
+
         if (maxFamilyIncome && extractedIncome > maxFamilyIncome) {
             return res.status(400).json({ error: `Income exceeds the maximum limit of Rs. ${maxFamilyIncome} for this scheme.` });
         }
@@ -212,8 +212,8 @@ exports.submitStage2 = async (req, res) => {
 
         await application.save();
 
-        res.status(200).json({ 
-            message: "Stage 2 completed successfully", 
+        res.status(200).json({
+            message: "Stage 2 completed successfully",
             applicationId: application.applicationId,
             status: application.status
         });
@@ -226,10 +226,10 @@ exports.submitStage2 = async (req, res) => {
 
 exports.submitStage3 = async (req, res) => {
     try {
-        const { 
-            applicationId, 
+        const {
+            applicationId,
             instituteName, courseLevel, courseName, qualifyingMarksPercentage,
-            qualifyingMarksheetUrl, bonafideCertificateUrl, feeReceiptUrl 
+            qualifyingMarksheetUrl, bonafideCertificateUrl, feeReceiptUrl
         } = req.body;
 
         if (!applicationId || !instituteName || !qualifyingMarksheetUrl || !bonafideCertificateUrl || !feeReceiptUrl) {
@@ -287,8 +287,8 @@ exports.submitStage3 = async (req, res) => {
 
         await application.save();
 
-        res.status(200).json({ 
-            message: "Stage 3 completed successfully", 
+        res.status(200).json({
+            message: "Stage 3 completed successfully",
             applicationId: application.applicationId,
             status: application.status
         });
@@ -323,8 +323,8 @@ exports.submitStage4 = async (req, res) => {
 
         await application.save();
 
-        res.status(200).json({ 
-            message: "Application submitted successfully! It is now pending Nodal Officer review.", 
+        res.status(200).json({
+            message: "Application submitted successfully! It is now pending Nodal Officer review.",
             applicationId: application.applicationId,
             status: application.status
         });
@@ -350,7 +350,7 @@ exports.saveDraft = async (req, res) => {
         }
 
         application.status = 'DRAFT';
-        
+
         application.auditTrail.push({
             action: 'DRAFT_SAVED',
             performedBy: application.applicantId,

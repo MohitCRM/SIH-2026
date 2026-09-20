@@ -27,7 +27,8 @@ const sanctionLetterSchema = new mongoose.Schema({
   },
 
   issueDate: { type: Date, default: Date.now },
-  status: { type: String, enum: ['GENERATED', 'DISBURSED'], default: 'GENERATED' }
+  status: { type: String, enum: ['GENERATED', 'DISBURSED'], default: 'GENERATED' },
+  qrCodeUrl: { type: String }
 
 }, { timestamps: true });
 

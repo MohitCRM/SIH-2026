@@ -26,5 +26,8 @@ const initialiseconnection = async () => {
     }
 }
 
-initialiseconnection();
+if (require.main === module) {
+    initialiseconnection();
+}
 
+module.exports = app;
