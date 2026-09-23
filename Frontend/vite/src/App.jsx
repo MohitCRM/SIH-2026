@@ -1,13 +1,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import RoleSelector from './pages/RoleSelector';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import ApplicantLayout from './layouts/ApplicantLayout';
 import ApplicantDashboard from './pages/applicant/Dashboard';
 import ApplicationFlow from './pages/applicant/ApplicationFlow';
 import Applications from './pages/applicant/Applications';
 import ApplicationView from './pages/applicant/ApplicationView';
+import Messages from './pages/applicant/Messages';
 import OfficerLayout from './layouts/OfficerLayout';
 import OfficerDashboard from './pages/officer/OfficerDashboard';
+import OfficerSchemeView from './pages/officer/OfficerSchemeView';
 import VerificationView from './pages/officer/VerificationView';
 import MinistryLayout from './layouts/MinistryLayout';
 import MinistryDashboard from './pages/ministry/MinistryDashboard';
@@ -20,7 +23,8 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<RoleSelector />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Applicant Routes */}
         <Route path="/applicant" element={<ApplicantLayout />}>
@@ -28,12 +32,13 @@ function App() {
           <Route path="apply/:schemeId" element={<ApplicationFlow />} />
           <Route path="drafts" element={<Applications />} />
           <Route path="application/:applicationId" element={<ApplicationView />} />
-          <Route path="messages" element={<div className="p-8"><h1 className="text-3xl font-bold">Messages</h1></div>} />
+          <Route path="messages" element={<Messages />} />
         </Route>
 
         {/* Officer Routes */}
         <Route path="/officer" element={<OfficerLayout />}>
            <Route index element={<OfficerDashboard />} />
+           <Route path="scheme/:schemeId" element={<OfficerSchemeView />} />
            <Route path="verify/:applicationId" element={<VerificationView />} />
            <Route path="approved" element={<div className="p-8"><h1 className="text-3xl font-bold">Approved List</h1></div>} />
            <Route path="reports" element={<div className="p-8"><h1 className="text-3xl font-bold">Reports</h1></div>} />

@@ -38,7 +38,7 @@ const ApplicantDashboard = () => {
                 <span className="text-sm font-bold text-primary">{t('applicantDashboard.topClass.coverageValue')}</span>
               </div>
               <button
-                onClick={() => navigate('/applicant/apply/mock-scheme-id')}
+                onClick={() => navigate('/applicant/apply/64a7d3a2b3c4d5e6f7a8b9c0')}
                 className="btn btn-primary gap-2"
               >
                 {t('applicantDashboard.topClass.applyNow')} <ArrowRight size={16} />

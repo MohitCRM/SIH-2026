@@ -1,12 +1,31 @@
 const Application = require('../models/Application');
 const User = require('../models/User');
+const Scheme = require('../models/Scheme');
+
+exports.getOfficerSchemes = async (req, res) => {
+    try {
+        // For the hackathon demo, return all active schemes.
+        // In production, you would fetch User's allotted schemeIds.
+        const schemes = await Scheme.find({ status: 'ACTIVE' });
+        res.status(200).json(schemes);
+    } catch (error) {
+        console.error("Error fetching officer schemes:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
 
 exports.getPendingApplications = async (req, res) => {
     try {
+        const { schemeId } = req.query;
         // In a real application, you would filter by the officer's instituteId or state.
         // For the hackathon demo, we fetch all applications that are 'SUBMITTED' 
         // (meaning the student finished stage 4).
-        const applications = await Application.find({ status: 'SUBMITTED' })
+        const filter = { status: 'SUBMITTED' };
+        if (schemeId) {
+            filter.schemeId = schemeId;
+        }
+
+        const applications = await Application.find(filter)
             .populate('applicantId', 'basicDetails.fullName aadhaarNumber contact')
             .populate('schemeId', 'name');
 

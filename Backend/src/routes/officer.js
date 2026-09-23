@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const officerController = require('../controllers/officerController');
 
+// GET /api/officer/schemes -> List all schemes allotted to the officer
+router.get('/schemes', officerController.getOfficerSchemes);
+
 // GET /api/officer/applications -> List all pending applications
 router.get('/applications', officerController.getPendingApplications);
 

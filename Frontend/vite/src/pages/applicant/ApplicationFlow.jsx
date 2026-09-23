@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, ChevronRight, UploadCloud, Loader2, Info } from 'lucide-react';
 
@@ -24,7 +24,14 @@ const labelClass = "label text-sm font-bold text-base-content";
 const ApplicationFlow = () => {
   const { schemeId } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const existingAppId = searchParams.get('applicationId');
   const { t } = useTranslation();
+  
+  // Get real user from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const applicantId = user._id || "64a7c2f1b2a3d4e5f6a7b8c9"; // Fallback
+  
   const [currentStage, setCurrentStage] = useState(1);
   const [applicationId, setApplicationId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -49,6 +56,43 @@ const ApplicationFlow = () => {
     fee: null
   });
 
+  useEffect(() => {
+    if (existingAppId) {
+      const fetchApp = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(`/api/applicant/application/${existingAppId}`);
+          if (!res.ok) throw new Error("Failed to load draft");
+          const data = await res.json();
+          setApplicationId(data.applicationId);
+          
+          setFormData(prev => ({
+             ...prev,
+             accountNumber: data.submittedData?.bankDetails?.accountNumber || '',
+             ifscCode: data.submittedData?.bankDetails?.ifscCode || '',
+             instituteName: data.submittedData?.instituteName || '',
+             courseLevel: data.submittedData?.courseLevel || 'graduate',
+             courseName: data.submittedData?.courseName || '',
+             qualifyingMarksPercentage: data.submittedData?.qualifyingMarksPercentage || ''
+          }));
+
+          const trail = data.auditTrail || [];
+          const actions = trail.map(a => a.action);
+          if (actions.includes('STAGE_3_SUBMITTED')) setCurrentStage(4);
+          else if (actions.includes('STAGE_2_SUBMITTED')) setCurrentStage(3);
+          else if (actions.includes('STAGE_1_SUBMITTED')) setCurrentStage(2);
+          else setCurrentStage(1);
+        } catch (e) {
+          console.error(e);
+          setError("Failed to load draft application.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchApp();
+    }
+  }, [existingAppId]);
+
   const handleFileChange = (e, fileKey) => {
     if (e.target.files && e.target.files[0]) {
       setFiles({ ...files, [fileKey]: e.target.files[0] });
@@ -64,12 +108,13 @@ const ApplicationFlow = () => {
     setLoading(true);
     setError(null);
     try {
+      const validSchemeId = (schemeId && schemeId !== "mock-scheme-id") ? schemeId : "64a7d3a2b3c4d5e6f7a8b9c0";
       const response = await fetch('/api/applicant/stage1', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          applicantId: MOCK_APPLICANT_ID,
-          schemeId: MOCK_SCHEME_ID,
+          applicantId: applicantId, // Uses dynamic user
+          schemeId: validSchemeId,
           aadhaarNumber: formData.aadhaarNumber,
           bankDetails: {
             accountNumber: formData.accountNumber,
@@ -83,6 +128,8 @@ const ApplicationFlow = () => {
 
       setApplicationId(data.applicationId);
       setCurrentStage(2);
+      // Update URL so a refresh stays on the draft
+      setSearchParams({ applicationId: data.applicationId });
     } catch (err) {
       setError(err.message);
     } finally {

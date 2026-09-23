@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FileText, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
 
-const MOCK_APPLICANT_ID = "64a7c2f1b2a3d4e5f6a7b8c9"; // Using the same mock applicant ID as ApplicationFlow
-
 const Applications = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Get real user from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const applicantId = user._id || "64a7c2f1b2a3d4e5f6a7b8c9"; // Fallback
 
   useEffect(() => {
     fetchApplications();
@@ -19,7 +21,7 @@ const Applications = () => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/applicant/applications/${MOCK_APPLICANT_ID}`);
+      const response = await fetch(`/api/applicant/applications/${applicantId}`);
       if (!response.ok) throw new Error(t('applicantApplications.errors.fetchFailed'));
       const data = await response.json();
       setApplications(data);
@@ -44,8 +46,9 @@ const Applications = () => {
     }
   };
 
-  const drafts = applications.filter(a => a.status === 'DRAFT');
-  const submitted = applications.filter(a => a.status !== 'DRAFT');
+  const draftStatuses = ['DRAFT', 'STAGE1_SUBMITTED', 'STAGE2_SUBMITTED', 'STAGE3_SUBMITTED'];
+  const drafts = applications.filter(a => draftStatuses.includes(a.status));
+  const submitted = applications.filter(a => !draftStatuses.includes(a.status));
 
   const getStatusBadge = (status) => {
     switch(status) {
@@ -98,18 +101,33 @@ const Applications = () => {
                     {drafts.map(app => (
                       <tr key={app._id} className="hover">
                         <td className="font-mono text-sm text-primary font-semibold">{app.applicationId}</td>
-                        <td className="text-sm font-medium text-base-content">{app.schemeId ? app.schemeId.name : t('common.unknownScheme')}</td>
+                        <td className="text-sm font-medium text-base-content">{app.schemeId?.name || 'Top Class Scholarship'}</td>
                         <td className="text-sm text-base-content/60 flex items-center gap-1">
                           <Clock size={14}/>
                           {new Date(app.updatedAt).toLocaleDateString()}
                         </td>
                         <td>{getStatusBadge(app.status)}</td>
-                        <td className="flex gap-3">
-                          <button onClick={() => navigate(`/applicant/application/${app.applicationId}`)} className="btn btn-sm btn-ghost text-primary gap-1">
-                            <FileText size={16} /> {t('applicantApplications.drafts.openDocument')}
+                        <td className="flex gap-2">
+                          <button 
+                            onClick={() => navigate(`/applicant/apply/${app.schemeId?._id || 'unknown'}?applicationId=${app.applicationId}`)} 
+                            className="btn btn-sm btn-ghost text-primary gap-1"
+                          >
+                            <FileText size={16} /> Continue Application
                           </button>
-                          <button onClick={() => handleSubmitDraft(app.applicationId)} className="btn btn-sm btn-success text-success-content">
-                            {t('applicationFlow.stage4.finalSubmit')}
+                          <button 
+                            onClick={async () => {
+                              if(!window.confirm("Are you sure you want to delete this draft?")) return;
+                              try {
+                                const response = await fetch(`/api/applicant/applications/${app.applicationId}`, { method: 'DELETE' });
+                                if (!response.ok) throw new Error("Delete failed");
+                                fetchApplications();
+                              } catch (err) {
+                                alert(err.message);
+                              }
+                            }} 
+                            className="btn btn-sm btn-ghost text-error"
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>

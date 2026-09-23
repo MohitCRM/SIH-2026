@@ -4,11 +4,13 @@ const main = require('./config/db');
 const applicantRoutes = require('./routes/applicant');
 const officerRoutes = require('./routes/officer');
 const ministryRoutes = require('./routes/ministry');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
 app.use(express.json());
 
+app.use('/api/auth', authRoutes);
 app.use('/api/applicant', applicantRoutes);
 app.use('/api/officer', officerRoutes);
 app.use('/api/ministry', ministryRoutes);

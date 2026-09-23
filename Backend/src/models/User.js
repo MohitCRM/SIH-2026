@@ -2,12 +2,13 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   userId: { type: String, required: true, unique: true },
+  password: { type: String, required: true, default: 'password123' },
   role: {
     type: String,
     enum: ["STUDENT", "NODAL_OFFICER", "MINISTRY_ADMIN"],
     required: true
   },
-  aadhaarNumber: { type: String, required: true, match: /^[0-9]{12}$/ },
+  aadhaarNumber: { type: String, match: /^[0-9]{12}$/ },
   basicDetails: {
     fullName: { type: String },
     dob: { type: Date },

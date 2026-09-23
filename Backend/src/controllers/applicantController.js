@@ -98,7 +98,7 @@ exports.submitStage1 = async (req, res) => {
                 applicationId: `APP-${Date.now()}`,
                 applicantId,
                 schemeId,
-                status: 'DRAFT',
+                status: 'STAGE1_SUBMITTED',
                 submittedData: {
                     bankDetails
                 },
@@ -106,10 +106,9 @@ exports.submitStage1 = async (req, res) => {
             });
         } else {
             // Update existing
-            application.submittedData = {
-                ...application.submittedData,
-                bankDetails
-            };
+            application.status = 'STAGE1_SUBMITTED';
+            if (!application.submittedData) application.submittedData = {};
+            application.submittedData.bankDetails = bankDetails;
         }
 
         // Add or update the passbook document in the array
@@ -178,10 +177,9 @@ exports.submitStage2 = async (req, res) => {
         }
 
         // Update application data with extracted income
-        application.submittedData = {
-            ...application.submittedData,
-            declaredFamilyIncome: extractedIncome
-        };
+        application.status = 'STAGE2_SUBMITTED';
+        if (!application.submittedData) application.submittedData = {};
+        application.submittedData.declaredFamilyIncome = extractedIncome;
 
         // Add or update documents
         const docsToAdd = [
@@ -247,13 +245,12 @@ exports.submitStage3 = async (req, res) => {
         const extractedMarks = qualifyingMarksPercentage || 85.0; // Mocking
 
         // Update application data
-        application.submittedData = {
-            ...application.submittedData,
-            instituteName,
-            courseLevel,
-            courseName,
-            qualifyingMarksPercentage: extractedMarks
-        };
+        application.status = 'STAGE3_SUBMITTED';
+        if (!application.submittedData) application.submittedData = {};
+        application.submittedData.instituteName = instituteName;
+        application.submittedData.courseLevel = courseLevel;
+        application.submittedData.courseName = courseName;
+        application.submittedData.qualifyingMarksPercentage = extractedMarks;
 
         // Add or update documents
         const docsToAdd = [
@@ -365,6 +362,38 @@ exports.saveDraft = async (req, res) => {
         });
     } catch (error) {
         console.error("Error in saveDraft:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.deleteDraft = async (req, res) => {
+    try {
+        const { applicationId } = req.params;
+        const application = await Application.findOne({ applicationId });
+        if (!application) {
+            return res.status(404).json({ error: "Application not found" });
+        }
+        const draftStatuses = ['DRAFT', 'STAGE1_SUBMITTED', 'STAGE2_SUBMITTED', 'STAGE3_SUBMITTED'];
+        if (!draftStatuses.includes(application.status)) {
+            return res.status(400).json({ error: "Only drafts can be deleted" });
+        }
+        await Application.deleteOne({ applicationId });
+        res.status(200).json({ message: "Draft deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting draft:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+const Message = require('../models/Message');
+
+exports.getMessages = async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        const messages = await Message.find({ userId: applicantId }).sort({ createdAt: -1 });
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error("Error fetching messages:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };

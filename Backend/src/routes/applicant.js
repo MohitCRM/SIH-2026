@@ -21,5 +21,7 @@ router.post('/stage2', applicantController.submitStage2);
 router.post('/stage3', applicantController.submitStage3);
 router.post('/stage4', applicantController.submitStage4);
 router.post('/save-draft', applicantController.saveDraft);
+router.delete('/applications/:applicationId', applicantController.deleteDraft);
+router.get('/messages/:applicantId', applicantController.getMessages);
 
 module.exports = router;

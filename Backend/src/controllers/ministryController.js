@@ -1,6 +1,7 @@
 const Application = require('../models/Application');
 const Scheme = require('../models/Scheme');
 const SanctionLetter = require('../models/SanctionLetter');
+const Message = require('../models/Message');
 
 exports.generateMeritList = async (req, res) => {
     try {
@@ -66,6 +67,7 @@ exports.bulkApprove = async (req, res) => {
         }
 
         const sanctionLettersToInsert = [];
+        const messagesToInsert = [];
         const appIdsToUpdate = [];
         const frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
@@ -114,12 +116,23 @@ exports.bulkApprove = async (req, res) => {
                 },
                 qrCodeUrl: qrCodeUrl
             });
+            
+            // Generate notification message for the applicant
+            messagesToInsert.push({
+                userId: app.applicantId._id,
+                title: "Sanction Letter Generated",
+                body: `Congratulations! Your application for ${app.schemeId?.name || 'the scheme'} has been approved by the Ministry and your digital Sanction Letter has been generated.`,
+                actionUrl: `/verify-sanction/${encodeURIComponent(sanctionNumber)}`
+            });
         }
 
         // 1. Bulk insert the new Sanction Letters
         await SanctionLetter.insertMany(sanctionLettersToInsert);
+        
+        // 2. Bulk insert the messages
+        await Message.insertMany(messagesToInsert);
 
-        // 2. Update all provided applications to 'MINISTRY_APPROVED'
+        // 3. Update all provided applications to 'MINISTRY_APPROVED'
         const result = await Application.updateMany(
             { _id: { $in: appIdsToUpdate } },
             {

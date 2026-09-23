@@ -8,6 +8,9 @@ const applicationSchema = new mongoose.Schema({
     type: String,
     enum: [
       "DRAFT", 
+      "STAGE1_SUBMITTED",
+      "STAGE2_SUBMITTED",
+      "STAGE3_SUBMITTED",
       "SUBMITTED", 
       "AI_VERIFIED", 
       "DEFICIENCY_FOUND", 
@@ -18,8 +21,15 @@ const applicationSchema = new mongoose.Schema({
     default: "DRAFT"
   },
   submittedData: {
-    type: mongoose.Schema.Types.Mixed,
-    description: "Dynamic data based on the scheme's requirements"
+    bankDetails: {
+      accountNumber: String,
+      ifscCode: String
+    },
+    declaredFamilyIncome: Number,
+    instituteName: String,
+    courseLevel: String,
+    courseName: String,
+    qualifyingMarksPercentage: Number
   },
   documents: [{
     documentType: { type: String },
