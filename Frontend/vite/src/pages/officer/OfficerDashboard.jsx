@@ -14,7 +14,7 @@ const OfficerDashboard = () => {
     const fetchSchemes = async () => {
       try {
         const response = await fetch('/api/officer/schemes');
-        if (!response.ok) throw new Error("Failed to fetch assigned schemes");
+        if (!response.ok) throw new Error(t('officerDashboard.errors.fetchSchemesFailed'));
         const data = await response.json();
         setSchemes(data);
       } catch (err) {
@@ -55,20 +55,20 @@ const OfficerDashboard = () => {
           <p className="text-base-content/60 font-medium">{t('officerDashboard.header.subtitle') || "Select a scheme to verify applications"}</p>
         </div>
         <div className="badge badge-primary badge-lg gap-2 p-4 font-bold shadow-sm">
-          <CheckCircle size={16} /> 0 Approved Today
+          <CheckCircle size={16} /> 0 {t('officerDashboard.stats.approvedToday')}
         </div>
       </header>
 
       <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
         <FileText className="text-primary" size={24} /> 
-        Assigned Schemes
+        {t('officerDashboard.schemes.heading')}
       </h2>
 
       {schemes.length === 0 ? (
          <div className="card bg-base-100 border-dashed border-2 border-base-300 p-16 text-center fade-in">
            <AlertCircle className="mx-auto text-base-content/20 mb-4" size={48} />
-           <h3 className="text-lg font-bold text-base-content/80 mb-1">No Schemes Assigned</h3>
-           <p className="text-sm text-base-content/50 font-medium">You have not been assigned to verify any schemes yet.</p>
+           <h3 className="text-lg font-bold text-base-content/80 mb-1">{t('officerDashboard.schemes.emptyTitle')}</h3>
+           <p className="text-sm text-base-content/50 font-medium">{t('officerDashboard.schemes.emptyDesc')}</p>
          </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -87,7 +87,7 @@ const OfficerDashboard = () => {
                 <h3 className="card-title text-base-content mt-2 text-lg line-clamp-2 leading-tight min-h-[3rem]">{scheme.name}</h3>
                 
                 <p className="text-base-content/60 text-sm mt-2 line-clamp-3 mb-4">
-                  {scheme.description || "Review and verify student applications for this scheme."}
+                  {scheme.description || t('officerDashboard.schemes.defaultDescription')}
                 </p>
                 
                 <div className="card-actions justify-end mt-auto pt-4 border-t border-base-200">
@@ -95,7 +95,7 @@ const OfficerDashboard = () => {
                     onClick={() => navigate(`/officer/scheme/${scheme._id}`)}
                     className="btn btn-primary w-full gap-2"
                   >
-                    View Applications <ChevronRight size={16} />
+                    {t('officerDashboard.schemes.viewApplications')} <ChevronRight size={16} />
                   </button>
                 </div>
               </div>

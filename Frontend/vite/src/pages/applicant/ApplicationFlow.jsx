@@ -62,7 +62,7 @@ const ApplicationFlow = () => {
         setLoading(true);
         try {
           const res = await fetch(`/api/applicant/application/${existingAppId}`);
-          if (!res.ok) throw new Error("Failed to load draft");
+          if (!res.ok) throw new Error(t('applicationFlow.errors.loadDraftFailed'));
           const data = await res.json();
           setApplicationId(data.applicationId);
           
@@ -84,7 +84,7 @@ const ApplicationFlow = () => {
           else setCurrentStage(1);
         } catch (e) {
           console.error(e);
-          setError("Failed to load draft application.");
+          setError(t('applicationFlow.errors.loadDraftApplicationFailed'));
         } finally {
           setLoading(false);
         }

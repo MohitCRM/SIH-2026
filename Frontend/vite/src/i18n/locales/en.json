@@ -7,7 +7,8 @@
     "loading": "Loading your applications...",
     "errors": {
       "fetchFailed": "Failed to fetch applications",
-      "submitFailed": "Failed to submit application"
+      "submitFailed": "Failed to submit application",
+      "deleteFailed": "Delete failed"
     },
     "confirmFinalSubmit": "Are you sure you want to final submit this application?",
     "alertSubmitSuccess": "Application submitted successfully!",
@@ -15,7 +16,10 @@
       "heading": "Saved Drafts",
       "colLastSaved": "Last Saved",
       "openDocument": "Open Document",
-      "empty": "No saved drafts found."
+      "empty": "No saved drafts found.",
+      "continueApplication": "Continue Application",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this draft?"
     },
     "submitted": {
       "heading": "Submitted Applications",
@@ -109,11 +113,14 @@
     "signOut": "Sign Out",
     "unknownStudent": "Unknown Student",
     "unknownScheme": "Unknown Scheme",
-    "notAvailable": "N/A"
+    "notAvailable": "N/A",
+    "userId": "User ID",
+    "password": "Password",
+    "networkError": "Network error. Is the backend running?"
   },
   "officerDashboard": {
     "loading": "Loading assigned applications...",
-    "errors": { "fetchFailed": "Failed to fetch pending applications" },
+    "errors": { "fetchFailed": "Failed to fetch pending applications", "fetchSchemesFailed": "Failed to fetch assigned schemes" },
     "header": {
       "title": "Nodal Officer Dashboard",
       "subtitle": "Review and verify student applications for assigned schemes."
@@ -139,6 +146,13 @@
     "empty": {
       "title": "All Caught Up!",
       "desc": "There are no pending applications waiting for your verification right now."
+    },
+    "schemes": {
+      "heading": "Assigned Schemes",
+      "emptyTitle": "No Schemes Assigned",
+      "emptyDesc": "You have not been assigned to verify any schemes yet.",
+      "defaultDescription": "Review and verify student applications for this scheme.",
+      "viewApplications": "View Applications"
     }
   },
   "verificationView": {
@@ -202,7 +216,9 @@
     "errors": {
       "verificationFailed": "Verification Failed",
       "submissionFailed": "Submission Failed",
-      "saveDraftFailed": "Failed to save draft"
+      "saveDraftFailed": "Failed to save draft",
+      "loadDraftFailed": "Failed to load draft",
+      "loadDraftApplicationFailed": "Failed to load draft application."
     },
     "stage1": {
       "badge": "Stage 1:",
@@ -318,5 +334,63 @@
   "courseLevels": {
     "graduate": "Graduate",
     "post_graduate": "Post Graduate"
+  },
+  "login": {
+    "title": "Centralized Portal",
+    "subtitle": "Sign in to access your dashboard",
+    "userIdPlaceholder": "Enter your User ID",
+    "passwordPlaceholder": "Enter password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "registerLink": "Register here",
+    "errors": {
+      "loginFailed": "Login failed"
+    }
+  },
+  "register": {
+    "title": "Create an Account",
+    "subtitle": "Register for the Centralized Portal",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "userIdPlaceholder": "Choose a User ID",
+    "passwordPlaceholder": "Choose a password",
+    "roleLabel": "Role",
+    "roles": {
+      "student": "Student / Applicant",
+      "nodalOfficer": "Nodal Officer",
+      "ministryAdmin": "Ministry Admin"
+    },
+    "submit": "Register",
+    "submitting": "Registering...",
+    "haveAccount": "Already have an account?",
+    "signInLink": "Sign in here",
+    "errors": {
+      "registerFailed": "Registration failed"
+    }
+  },
+  "messages": {
+    "title": "My Messages",
+    "subtitle": "Important notifications and updates about your applications",
+    "emptyTitle": "No Messages",
+    "emptyDesc": "You don't have any messages yet.",
+    "retry": "Retry",
+    "openSanctionLetter": "Open Sanction Letter",
+    "dateAt": "{{date}} at {{time}}",
+    "errors": {
+      "fetchFailed": "Failed to load messages"
+    }
+  },
+  "officerSchemeView": {
+    "backToSchemes": "Back to Schemes",
+    "title": "Scheme Applications",
+    "subtitle": "Verify pending applications for this scheme",
+    "pendingVerification": "Pending Verification"
+  },
+  "placeholderPages": {
+    "approvedList": "Approved List",
+    "reports": "Reports",
+    "allMeritLists": "All Merit Lists",
+    "fundDisbursementDashboard": "Fund Disbursement Dashboard"
   }
 }

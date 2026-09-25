@@ -41,10 +41,10 @@ const Login = () => {
           navigate('/applicant');
         }
       } else {
-        setError(data.message || 'Login failed');
+        setError(data.message || t('login.errors.loginFailed'));
       }
     } catch (err) {
-      setError('Network error. Is the backend running?');
+      setError(t('common.networkError'));
     } finally {
       setLoading(false);
     }
@@ -62,10 +62,10 @@ const Login = () => {
              <ShieldCheck size={32} />
           </div>
           <h1 className="text-3xl font-bold mb-2 text-base-content">
-            Centralized Portal
+            {t('login.title')}
           </h1>
           <p className="text-base-content/60">
-            Sign in to access your dashboard
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -74,7 +74,7 @@ const Login = () => {
             <form onSubmit={handleLogin}>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">User ID</span>
+                  <span className="label-text">{t('common.userId')}</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -82,7 +82,7 @@ const Login = () => {
                   </div>
                   <input 
                     type="text" 
-                    placeholder="Enter your User ID" 
+                    placeholder={t('login.userIdPlaceholder')} 
                     className="input input-bordered w-full pl-10" 
                     value={userId}
                     onChange={(e) => setUserId(e.target.value)}
@@ -93,7 +93,7 @@ const Login = () => {
 
               <div className="form-control mt-4">
                 <label className="label">
-                  <span className="label-text">Password</span>
+                  <span className="label-text">{t('common.password')}</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -101,7 +101,7 @@ const Login = () => {
                   </div>
                   <input 
                     type={showPassword ? "text" : "password"} 
-                    placeholder="Enter password" 
+                    placeholder={t('login.passwordPlaceholder')} 
                     className="input input-bordered w-full pl-10 pr-10" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -129,13 +129,13 @@ const Login = () => {
                   className={`btn btn-primary w-full ${loading ? 'loading' : ''}`}
                   disabled={loading}
                 >
-                  {loading ? 'Signing in...' : 'Sign In'}
+                  {loading ? t('login.signingIn') : t('login.signIn')}
                 </button>
               </div>
             </form>
             
             <div className="mt-6 text-center text-sm text-base-content/60">
-              <p>Don't have an account? <Link to="/register" className="link link-primary">Register here</Link></p>
+              <p>{t('login.noAccount')} <Link to="/register" className="link link-primary">{t('login.registerLink')}</Link></p>
             </div>
           </div>
         </div>

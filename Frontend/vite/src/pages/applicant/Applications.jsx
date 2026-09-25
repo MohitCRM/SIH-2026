@@ -101,7 +101,7 @@ const Applications = () => {
                     {drafts.map(app => (
                       <tr key={app._id} className="hover">
                         <td className="font-mono text-sm text-primary font-semibold">{app.applicationId}</td>
-                        <td className="text-sm font-medium text-base-content">{app.schemeId?.name || 'Top Class Scholarship'}</td>
+                        <td className="text-sm font-medium text-base-content">{app.schemeId?.name || t('common.unknownScheme')}</td>
                         <td className="text-sm text-base-content/60 flex items-center gap-1">
                           <Clock size={14}/>
                           {new Date(app.updatedAt).toLocaleDateString()}
@@ -112,14 +112,14 @@ const Applications = () => {
                             onClick={() => navigate(`/applicant/apply/${app.schemeId?._id || 'unknown'}?applicationId=${app.applicationId}`)} 
                             className="btn btn-sm btn-ghost text-primary gap-1"
                           >
-                            <FileText size={16} /> Continue Application
+                            <FileText size={16} /> {t('applicantApplications.drafts.continueApplication')}
                           </button>
                           <button 
                             onClick={async () => {
-                              if(!window.confirm("Are you sure you want to delete this draft?")) return;
+                              if(!window.confirm(t('applicantApplications.drafts.confirmDelete'))) return;
                               try {
                                 const response = await fetch(`/api/applicant/applications/${app.applicationId}`, { method: 'DELETE' });
-                                if (!response.ok) throw new Error("Delete failed");
+                                if (!response.ok) throw new Error(t('applicantApplications.errors.deleteFailed'));
                                 fetchApplications();
                               } catch (err) {
                                 alert(err.message);
@@ -127,7 +127,7 @@ const Applications = () => {
                             }} 
                             className="btn btn-sm btn-ghost text-error"
                           >
-                            Delete
+                            {t('applicantApplications.drafts.delete')}
                           </button>
                         </td>
                       </tr>

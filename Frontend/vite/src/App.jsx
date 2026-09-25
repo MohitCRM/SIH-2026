@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ApplicantLayout from './layouts/ApplicantLayout';
@@ -20,6 +21,8 @@ import './index.css'; // Make sure global css is imported
 // We'll replace these with actual components later
 
 function App() {
+  const { t } = useTranslation();
+
   return (
     <Router>
       <Routes>
@@ -40,15 +43,15 @@ function App() {
            <Route index element={<OfficerDashboard />} />
            <Route path="scheme/:schemeId" element={<OfficerSchemeView />} />
            <Route path="verify/:applicationId" element={<VerificationView />} />
-           <Route path="approved" element={<div className="p-8"><h1 className="text-3xl font-bold">Approved List</h1></div>} />
-           <Route path="reports" element={<div className="p-8"><h1 className="text-3xl font-bold">Reports</h1></div>} />
+           <Route path="approved" element={<div className="p-8"><h1 className="text-3xl font-bold">{t('placeholderPages.approvedList')}</h1></div>} />
+           <Route path="reports" element={<div className="p-8"><h1 className="text-3xl font-bold">{t('placeholderPages.reports')}</h1></div>} />
         </Route>
         {/* Ministry Routes */}
         <Route path="/ministry" element={<MinistryLayout />}>
            <Route index element={<MinistryDashboard />} />
            <Route path="merit-list/:schemeId" element={<MeritListView />} />
-           <Route path="merit-lists" element={<div className="p-8"><h1 className="text-3xl font-bold">All Merit Lists</h1></div>} />
-           <Route path="funds" element={<div className="p-8"><h1 className="text-3xl font-bold">Fund Disbursement Dashboard</h1></div>} />
+           <Route path="merit-lists" element={<div className="p-8"><h1 className="text-3xl font-bold">{t('placeholderPages.allMeritLists')}</h1></div>} />
+           <Route path="funds" element={<div className="p-8"><h1 className="text-3xl font-bold">{t('placeholderPages.fundDisbursementDashboard')}</h1></div>} />
         </Route>
       </Routes>
     </Router>

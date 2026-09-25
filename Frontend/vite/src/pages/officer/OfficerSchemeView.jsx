@@ -53,19 +53,19 @@ const OfficerSchemeView = () => {
     <div className="max-w-7xl mx-auto fade-in p-6">
       
       <Link to="/officer" className="btn btn-ghost btn-sm gap-2 mb-6 text-base-content/70">
-        <ArrowLeft size={16} /> Back to Schemes
+        <ArrowLeft size={16} /> {t('officerSchemeView.backToSchemes')}
       </Link>
 
       <header className="mb-8">
-        <h1 className="text-3xl font-bold mb-2 text-base-content">Scheme Applications</h1>
-        <p className="text-base-content/60 font-medium">Verify pending applications for this scheme</p>
+        <h1 className="text-3xl font-bold mb-2 text-base-content">{t('officerSchemeView.title')}</h1>
+        <p className="text-base-content/60 font-medium">{t('officerSchemeView.subtitle')}</p>
       </header>
 
       <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden rounded-xl">
         <div className="p-6 border-b border-base-200 flex justify-between items-center bg-base-200/50">
           <h2 className="text-lg font-bold text-base-content flex items-center gap-2">
             <FileText className="text-warning" size={20} />
-            Pending Verification
+            {t('officerSchemeView.pendingVerification')}
           </h2>
           <div className="badge badge-warning badge-outline font-bold p-3">
             {t('officerDashboard.table.actionItems', { count: applications.length }) || `${applications.length} Action Items`}

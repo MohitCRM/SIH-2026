@@ -7,7 +7,8 @@
     "loading": "आपके आवेदन लोड हो रहे हैं...",
     "errors": {
       "fetchFailed": "आवेदन प्राप्त करने में विफल",
-      "submitFailed": "आवेदन प्रस्तुत करने में विफल"
+      "submitFailed": "आवेदन प्रस्तुत करने में विफल",
+      "deleteFailed": "हटाने में विफल"
     },
     "confirmFinalSubmit": "क्या आप वाकई इस आवेदन को अंतिम रूप से प्रस्तुत करना चाहते हैं?",
     "alertSubmitSuccess": "आवेदन सफलतापूर्वक प्रस्तुत किया गया!",
@@ -15,7 +16,10 @@
       "heading": "सहेजे गए ड्राफ्ट",
       "colLastSaved": "अंतिम बार सहेजा गया",
       "openDocument": "दस्तावेज़ खोलें",
-      "empty": "कोई सहेजा गया ड्राफ्ट नहीं मिला।"
+      "empty": "कोई सहेजा गया ड्राफ्ट नहीं मिला।",
+      "continueApplication": "आवेदन जारी रखें",
+      "delete": "हटाएं",
+      "confirmDelete": "क्या आप वाकई इस ड्राफ्ट को हटाना चाहते हैं?"
     },
     "submitted": {
       "heading": "प्रस्तुत आवेदन",
@@ -109,11 +113,14 @@
     "signOut": "साइन आउट",
     "unknownStudent": "अज्ञात छात्र",
     "unknownScheme": "अज्ञात योजना",
-    "notAvailable": "उपलब्ध नहीं"
+    "notAvailable": "उपलब्ध नहीं",
+    "userId": "यूज़र आईडी",
+    "password": "पासवर्ड",
+    "networkError": "नेटवर्क त्रुटि। क्या बैकएंड चालू है?"
   },
   "officerDashboard": {
     "loading": "नियत आवेदन लोड हो रहे हैं...",
-    "errors": { "fetchFailed": "लंबित आवेदन प्राप्त करने में विफल" },
+    "errors": { "fetchFailed": "लंबित आवेदन प्राप्त करने में विफल", "fetchSchemesFailed": "नियत योजनाएं प्राप्त करने में विफल" },
     "header": {
       "title": "नोडल अधिकारी डैशबोर्ड",
       "subtitle": "नियत योजनाओं के लिए छात्र आवेदनों की समीक्षा और सत्यापन करें।"
@@ -139,6 +146,13 @@
     "empty": {
       "title": "सब कुछ पूरा हो गया!",
       "desc": "अभी आपके सत्यापन की प्रतीक्षा में कोई लंबित आवेदन नहीं है।"
+    },
+    "schemes": {
+      "heading": "नियत योजनाएं",
+      "emptyTitle": "कोई योजना नियत नहीं",
+      "emptyDesc": "आपको अभी तक किसी भी योजना का सत्यापन करने के लिए नियत नहीं किया गया है।",
+      "defaultDescription": "इस योजना के लिए छात्र आवेदनों की समीक्षा और सत्यापन करें।",
+      "viewApplications": "आवेदन देखें"
     }
   },
   "verificationView": {
@@ -202,7 +216,9 @@
     "errors": {
       "verificationFailed": "सत्यापन विफल",
       "submissionFailed": "सबमिशन विफल",
-      "saveDraftFailed": "ड्राफ्ट सहेजने में विफल"
+      "saveDraftFailed": "ड्राफ्ट सहेजने में विफल",
+      "loadDraftFailed": "ड्राफ्ट लोड करने में विफल",
+      "loadDraftApplicationFailed": "ड्राफ्ट आवेदन लोड करने में विफल।"
     },
     "stage1": {
       "badge": "चरण 1:",
@@ -318,5 +334,63 @@
   "courseLevels": {
     "graduate": "स्नातक",
     "post_graduate": "स्नातकोत्तर"
+  },
+  "login": {
+    "title": "केंद्रीकृत पोर्टल",
+    "subtitle": "अपने डैशबोर्ड तक पहुंचने के लिए साइन इन करें",
+    "userIdPlaceholder": "अपनी यूज़र आईडी दर्ज करें",
+    "passwordPlaceholder": "पासवर्ड दर्ज करें",
+    "signIn": "साइन इन करें",
+    "signingIn": "साइन इन हो रहा है...",
+    "noAccount": "खाता नहीं है?",
+    "registerLink": "यहां रजिस्टर करें",
+    "errors": {
+      "loginFailed": "लॉगिन विफल"
+    }
+  },
+  "register": {
+    "title": "खाता बनाएं",
+    "subtitle": "केंद्रीकृत पोर्टल के लिए रजिस्टर करें",
+    "fullNameLabel": "पूरा नाम",
+    "fullNamePlaceholder": "अपना पूरा नाम दर्ज करें",
+    "userIdPlaceholder": "एक यूज़र आईडी चुनें",
+    "passwordPlaceholder": "एक पासवर्ड चुनें",
+    "roleLabel": "भूमिका",
+    "roles": {
+      "student": "छात्र / आवेदक",
+      "nodalOfficer": "नोडल अधिकारी",
+      "ministryAdmin": "मंत्रालय एडमिन"
+    },
+    "submit": "रजिस्टर करें",
+    "submitting": "रजिस्टर हो रहा है...",
+    "haveAccount": "पहले से खाता है?",
+    "signInLink": "यहां साइन इन करें",
+    "errors": {
+      "registerFailed": "रजिस्ट्रेशन विफल"
+    }
+  },
+  "messages": {
+    "title": "मेरे संदेश",
+    "subtitle": "आपके आवेदनों के बारे में महत्वपूर्ण सूचनाएं और अपडेट",
+    "emptyTitle": "कोई संदेश नहीं",
+    "emptyDesc": "आपके पास अभी तक कोई संदेश नहीं है।",
+    "retry": "पुनः प्रयास करें",
+    "openSanctionLetter": "स्वीकृति पत्र खोलें",
+    "dateAt": "{{date}} को {{time}} बजे",
+    "errors": {
+      "fetchFailed": "संदेश लोड करने में विफल"
+    }
+  },
+  "officerSchemeView": {
+    "backToSchemes": "योजनाओं पर वापस जाएं",
+    "title": "योजना आवेदन",
+    "subtitle": "इस योजना के लंबित आवेदनों का सत्यापन करें",
+    "pendingVerification": "सत्यापन लंबित"
+  },
+  "placeholderPages": {
+    "approvedList": "स्वीकृत सूची",
+    "reports": "रिपोर्ट",
+    "allMeritLists": "सभी मेरिट सूचियां",
+    "fundDisbursementDashboard": "निधि वितरण डैशबोर्ड"
   }
 }

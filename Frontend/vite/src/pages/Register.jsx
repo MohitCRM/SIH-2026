@@ -40,10 +40,10 @@ const Register = () => {
         // Redirect to login after successful registration
         navigate('/');
       } else {
-        setError(data.message || 'Registration failed');
+        setError(data.message || t('register.errors.registerFailed'));
       }
     } catch (err) {
-      setError('Network error. Is the backend running?');
+      setError(t('common.networkError'));
     } finally {
       setLoading(false);
     }
@@ -61,10 +61,10 @@ const Register = () => {
              <UserCircle size={32} />
           </div>
           <h1 className="text-3xl font-bold mb-2 text-base-content">
-            Create an Account
+            {t('register.title')}
           </h1>
           <p className="text-base-content/60">
-            Register for the Centralized Portal
+            {t('register.subtitle')}
           </p>
         </div>
 
@@ -73,7 +73,7 @@ const Register = () => {
             <form onSubmit={handleRegister}>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text">Full Name</span>
+                  <span className="label-text">{t('register.fullNameLabel')}</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -82,7 +82,7 @@ const Register = () => {
                   <input 
                     type="text" 
                     name="fullName"
-                    placeholder="Enter your full name" 
+                    placeholder={t('register.fullNamePlaceholder')} 
                     className="input input-bordered w-full pl-10" 
                     value={formData.fullName}
                     onChange={handleChange}
@@ -93,7 +93,7 @@ const Register = () => {
 
               <div className="form-control mt-4">
                 <label className="label">
-                  <span className="label-text">User ID</span>
+                  <span className="label-text">{t('common.userId')}</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -102,7 +102,7 @@ const Register = () => {
                   <input 
                     type="text" 
                     name="userId"
-                    placeholder="Choose a User ID" 
+                    placeholder={t('register.userIdPlaceholder')} 
                     className="input input-bordered w-full pl-10" 
                     value={formData.userId}
                     onChange={handleChange}
@@ -113,7 +113,7 @@ const Register = () => {
 
               <div className="form-control mt-4">
                 <label className="label">
-                  <span className="label-text">Password</span>
+                  <span className="label-text">{t('common.password')}</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -122,7 +122,7 @@ const Register = () => {
                   <input 
                     type={showPassword ? "text" : "password"} 
                     name="password"
-                    placeholder="Choose a password" 
+                    placeholder={t('register.passwordPlaceholder')} 
                     className="input input-bordered w-full pl-10 pr-10" 
                     value={formData.password}
                     onChange={handleChange}
@@ -140,7 +140,7 @@ const Register = () => {
 
               <div className="form-control mt-4">
                 <label className="label">
-                  <span className="label-text">Role</span>
+                  <span className="label-text">{t('register.roleLabel')}</span>
                 </label>
                 <select 
                   name="role" 
@@ -148,9 +148,9 @@ const Register = () => {
                   value={formData.role}
                   onChange={handleChange}
                 >
-                  <option value="STUDENT">Student / Applicant</option>
-                  <option value="NODAL_OFFICER">Nodal Officer</option>
-                  <option value="MINISTRY_ADMIN">Ministry Admin</option>
+                  <option value="STUDENT">{t('register.roles.student')}</option>
+                  <option value="NODAL_OFFICER">{t('register.roles.nodalOfficer')}</option>
+                  <option value="MINISTRY_ADMIN">{t('register.roles.ministryAdmin')}</option>
                 </select>
               </div>
 
@@ -166,13 +166,13 @@ const Register = () => {
                   className={`btn btn-primary w-full ${loading ? 'loading' : ''}`}
                   disabled={loading}
                 >
-                  {loading ? 'Registering...' : 'Register'}
+                  {loading ? t('register.submitting') : t('register.submit')}
                 </button>
               </div>
             </form>
             
             <div className="mt-6 text-center text-sm text-base-content/60">
-              <p>Already have an account? <Link to="/" className="link link-primary">Sign in here</Link></p>
+              <p>{t('register.haveAccount')} <Link to="/" className="link link-primary">{t('register.signInLink')}</Link></p>
             </div>
           </div>
         </div>
