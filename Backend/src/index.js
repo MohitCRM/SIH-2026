@@ -5,6 +5,7 @@ const applicantRoutes = require('./routes/applicant');
 const officerRoutes = require('./routes/officer');
 const ministryRoutes = require('./routes/ministry');
 const authRoutes = require('./routes/auth');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/applicant', applicantRoutes);
 app.use('/api/officer', officerRoutes);
 app.use('/api/ministry', ministryRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 const initialiseconnection = async () => {
     try {

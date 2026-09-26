@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, FileText, MessageSquare, LogOut, Building } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import ChatWidget from '../components/ChatWidget';
 
 const ApplicantLayout = () => {
   const navigate = useNavigate();
@@ -83,6 +84,8 @@ const ApplicantLayout = () => {
           </li>
         </ul>
       </div>
+
+      <ChatWidget />
     </div>
   );
 };

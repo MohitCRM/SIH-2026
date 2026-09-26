@@ -392,5 +392,12 @@
     "reports": "Reports",
     "allMeritLists": "All Merit Lists",
     "fundDisbursementDashboard": "Fund Disbursement Dashboard"
+  },
+  "chatWidget": {
+    "title": "Ask Saathi",
+    "online": "Online",
+    "greeting": "Hi! I'm Saathi, your scholarship assistant. Ask me about scheme details, eligibility, required documents, or how to fill in your application, and I'll guide you step by step.",
+    "placeholder": "Type your question...",
+    "error": "Something went wrong, please try again"
   }
 }
