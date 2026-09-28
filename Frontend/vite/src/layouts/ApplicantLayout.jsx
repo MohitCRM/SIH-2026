@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, FileText, MessageSquare, LogOut, Building } from 'lucide-react';
+import { LayoutDashboard, FileText, MessageSquare, LogOut, Building, Menu, User, Trash2 } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const ApplicantLayout = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(window.innerWidth >= 1024);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const navItems = [
     { name: 'Dashboard', label: t('common.dashboard'), path: '/applicant', icon: <LayoutDashboard size={20} />, exact: true },
@@ -14,26 +16,66 @@ const ApplicantLayout = () => {
     { name: 'Messages', label: t('layouts.applicant.nav.messages'), path: '/applicant/messages', icon: <MessageSquare size={20} /> },
   ];
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to completely delete your account? This action is irreversible and all your applications will be destroyed.")) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      const applicantId = localStorage.getItem('applicantId') || 'mockUserId'; // Should grab from actual auth state
+      await fetch(`/api/applicant/delete-account/${applicantId}`, { method: 'DELETE' });
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="drawer lg:drawer-open">
-      <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+    <div className={`drawer ${isDrawerOpen ? 'lg:drawer-open' : ''}`}>
+      <input id="my-drawer-2" type="checkbox" className="drawer-toggle" checked={isDrawerOpen} onChange={(e) => setIsDrawerOpen(e.target.checked)} />
       
       {/* Main Content Area */}
       <div className="drawer-content flex flex-col bg-base-200 min-h-screen">
         {/* Top Navbar */}
-        <div className="navbar bg-base-100 shadow-sm px-8">
+        <div className="navbar bg-base-100 shadow-sm px-4 md:px-8">
           <div className="flex-1 flex items-center gap-2">
-            <label htmlFor="my-drawer-2" className="btn btn-square btn-ghost lg:hidden">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-5 h-5 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            <label htmlFor="my-drawer-2" className="btn btn-square btn-ghost">
+              <Menu size={24} />
             </label>
-            <span className="badge badge-outline badge-sm font-bold opacity-70 mr-2">{t('common.govBadge')}</span>
-            <span className="text-sm font-semibold text-base-content/70">{t('roleSelector.govOfIndia')}</span>
+            <span className="badge badge-outline badge-sm font-bold opacity-70 mr-2 hidden sm:inline-flex">{t('common.govBadge')}</span>
+            <span className="text-sm font-semibold text-base-content/70 hidden sm:inline-block">{t('roleSelector.govOfIndia')}</span>
           </div>
           <div className="flex-none flex items-center gap-3 text-sm font-medium text-base-content/60">
             <div className="hidden sm:flex items-center gap-2">
               <Building size={16} /> {t('common.ministryOfTribalAffairs')}
             </div>
             <LanguageSwitcher />
+            <div className="dropdown dropdown-end ml-2 z-50">
+              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar bg-base-200 border border-base-300">
+                <div className="w-10 rounded-full flex items-center justify-center text-primary">
+                  <User size={20} />
+                </div>
+              </div>
+              <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow-xl menu menu-sm dropdown-content bg-base-100 border border-base-200 rounded-box w-56">
+                <li className="menu-title px-4 py-2 opacity-60 font-semibold uppercase tracking-wider text-xs">My Account</li>
+                <li>
+                  <button onClick={() => navigate('/')} className="hover:bg-base-200 py-3 font-medium">
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </li>
+                <div className="divider my-0"></div>
+                <li>
+                  <button onClick={handleDeleteAccount} disabled={isDeleting} className="text-error hover:bg-error/10 hover:text-error py-3 font-medium">
+                    <Trash2 size={16} />
+                    {isDeleting ? "Deleting..." : "Delete Account"}
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -63,6 +105,7 @@ const ApplicantLayout = () => {
                 <NavLink
                   to={item.path}
                   end={item.exact}
+                  onClick={() => setIsDrawerOpen(false)}
                   className={({ isActive }) => isActive ? 'active bg-primary text-primary-content focus:bg-primary focus:text-primary-content font-medium py-3' : 'font-medium py-3'}
                 >
                   {item.icon}

@@ -11,8 +11,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     userId: '',
     password: '',
-    role: 'STUDENT',
-    fullName: ''
+    role: 'STUDENT'
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -72,26 +71,6 @@ const Register = () => {
           <div className="card-body">
             <form onSubmit={handleRegister}>
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Full Name</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Type size={18} className="text-base-content/40" />
-                  </div>
-                  <input 
-                    type="text" 
-                    name="fullName"
-                    placeholder="Enter your full name" 
-                    className="input input-bordered w-full pl-10" 
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-control mt-4">
                 <label className="label">
                   <span className="label-text">User ID</span>
                 </label>

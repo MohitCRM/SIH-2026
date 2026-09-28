@@ -15,6 +15,7 @@ import VerificationView from './pages/officer/VerificationView';
 import MinistryLayout from './layouts/MinistryLayout';
 import MinistryDashboard from './pages/ministry/MinistryDashboard';
 import MeritListView from './pages/ministry/MeritListView';
+import CreateScheme from './pages/ministry/CreateScheme';
 import './index.css'; // Make sure global css is imported
 
 // We'll replace these with actual components later
@@ -46,6 +47,7 @@ function App() {
         {/* Ministry Routes */}
         <Route path="/ministry" element={<MinistryLayout />}>
            <Route index element={<MinistryDashboard />} />
+           <Route path="create-scheme" element={<CreateScheme />} />
            <Route path="merit-list/:schemeId" element={<MeritListView />} />
            <Route path="merit-lists" element={<div className="p-8"><h1 className="text-3xl font-bold">All Merit Lists</h1></div>} />
            <Route path="funds" element={<div className="p-8"><h1 className="text-3xl font-bold">Fund Disbursement Dashboard</h1></div>} />

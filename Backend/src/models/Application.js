@@ -11,6 +11,7 @@ const applicationSchema = new mongoose.Schema({
       "STAGE1_SUBMITTED",
       "STAGE2_SUBMITTED",
       "STAGE3_SUBMITTED",
+      "STAGE4_SUBMITTED",
       "SUBMITTED", 
       "AI_VERIFIED", 
       "DEFICIENCY_FOUND", 
@@ -20,16 +21,26 @@ const applicationSchema = new mongoose.Schema({
     ],
     default: "DRAFT"
   },
-  submittedData: {
-    bankDetails: {
-      accountNumber: String,
-      ifscCode: String
-    },
-    declaredFamilyIncome: Number,
-    instituteName: String,
-    courseLevel: String,
-    courseName: String,
-    qualifyingMarksPercentage: Number
+  personalInformation: {
+    applicantName: { type: String },
+    dateOfBirth: { type: Date },
+    gender: { type: String, enum: ['MALE', 'FEMALE', 'OTHER'] },
+    mobileNumber: { type: String },
+    emailAddress: { type: String },
+    domicileState: { type: String },
+    category: { type: String, enum: ['ST', 'PVTG', 'GENERAL', 'SC', 'OBC'] },
+    isDivyangjan: { type: Boolean, default: false }
+  },
+  financialAndBankingInformation: {
+    familyIncome: { type: Number },
+    aadhaarNumber: { type: String },
+    bankAccountNumber: { type: String },
+    bankIfscCode: { type: String },
+    isAadhaarLinkedToBank: { type: Boolean, default: false }
+  },
+  schemeSpecificData: {
+    type: mongoose.Schema.Types.Mixed,
+    description: "Dynamic fields specific to the applied scheme"
   },
   documents: [{
     documentType: { type: String },

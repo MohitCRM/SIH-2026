@@ -2,18 +2,13 @@ const User = require('../models/User');
 
 exports.login = async (req, res) => {
     try {
-        const { userId, password, role } = req.body;
+        const { userId, password } = req.body;
 
         // Find user
         const user = await User.findOne({ userId });
 
         if (!user) {
             return res.status(401).json({ message: 'Invalid credentials or user not found' });
-        }
-
-        // Check if role matches if provided
-        if (role && user.role !== role) {
-            return res.status(401).json({ message: 'User role mismatch' });
         }
 
         // Simple password check (For demo purposes only!)
@@ -39,7 +34,7 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
     try {
-        const { userId, password, role, fullName } = req.body;
+        const { userId, password, role } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ userId });
@@ -51,15 +46,12 @@ exports.register = async (req, res) => {
         const user = new User({
             userId,
             password: password || 'password123',
-            role,
-            basicDetails: {
-                fullName
-            }
+            role
         });
 
         await user.save();
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'User registered successfully',
             user: {
                 userId: user.userId,

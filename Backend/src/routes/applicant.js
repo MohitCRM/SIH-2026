@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const applicantController = require('../controllers/applicantController');
 
+// GET /api/applicant/schemes
+router.get('/schemes', applicantController.getAllSchemes);
+
 // GET /api/applicant/applications/:applicantId
 router.get('/applications/:applicantId', applicantController.getApplications);
 
@@ -20,8 +23,10 @@ router.post('/stage2', applicantController.submitStage2);
 // POST /api/applicant/stage3
 router.post('/stage3', applicantController.submitStage3);
 router.post('/stage4', applicantController.submitStage4);
+router.post('/final', applicantController.submitFinal);
 router.post('/save-draft', applicantController.saveDraft);
 router.delete('/applications/:applicationId', applicantController.deleteDraft);
 router.get('/messages/:applicantId', applicantController.getMessages);
+router.delete('/delete-account/:applicantId', applicantController.deleteAccount);
 
 module.exports = router;

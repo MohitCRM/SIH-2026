@@ -14,4 +14,13 @@ router.get('/verify-sanction/:sanctionNumber', ministryController.verifySanction
 // POST /api/ministry/disburse-funds -> PFMS Simulation
 router.post('/disburse-funds', ministryController.disburseFunds);
 
+// POST /api/ministry/schemes/extract -> AI Mock Extraction
+router.post('/schemes/extract', ministryController.extractSchemeDetails);
+
+// POST /api/ministry/schemes -> Create Scheme
+router.post('/schemes', ministryController.createScheme);
+
+// GET /api/ministry/dashboard -> Dashboard Analytics
+router.get('/dashboard', ministryController.getDashboardAnalytics);
+
 module.exports = router;

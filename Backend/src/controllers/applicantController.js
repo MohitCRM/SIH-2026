@@ -2,6 +2,16 @@ const Application = require('../models/Application');
 const User = require('../models/User');
 const Scheme = require('../models/Scheme');
 
+exports.getAllSchemes = async (req, res) => {
+    try {
+        const schemes = await Scheme.find({ status: 'ACTIVE' });
+        res.status(200).json(schemes);
+    } catch (error) {
+        console.error("Error fetching schemes:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
 exports.getApplications = async (req, res) => {
     try {
         const { applicantId } = req.params;
@@ -49,20 +59,28 @@ exports.submitDraft = async (req, res) => {
 
 exports.submitStage1 = async (req, res) => {
     try {
-        const { applicantId, schemeId, aadhaarNumber, bankDetails, passbookUrl } = req.body;
+        const { applicantId, schemeId, aadhaarUrl, mobileNumber, emailAddress } = req.body;
 
-        if (!applicantId || !schemeId || !aadhaarNumber || !bankDetails || !passbookUrl) {
-            return res.status(400).json({ error: "Missing required fields for Stage 1" });
+        const missingFields = [];
+        if (!applicantId) missingFields.push("applicantId");
+        if (!schemeId) missingFields.push("schemeId");
+        if (!aadhaarUrl) missingFields.push("aadhaarUrl");
+        if (!mobileNumber) missingFields.push("mobileNumber");
+        if (!emailAddress) missingFields.push("emailAddress");
+
+        if (missingFields.length > 0) {
+            return res.status(400).json({ error: `Missing required fields for Stage 1: ${missingFields.join(", ")}` });
         }
 
-        // 1. Mock Aadhaar KYC Verification
-        // In reality, this would hit an external API like DigiLocker or UIDAI
-        console.log(`Verifying Aadhaar: ${aadhaarNumber}`);
+        // 1. Mock Aadhaar OCR Verification
+        console.log(`Running OCR on Aadhaar: ${aadhaarUrl}`);
         const kycPassed = true; // Assuming success for demo
         const kycData = {
             fullName: "Mohit Kumar",
             dob: "2005-01-01",
-            gender: "Male"
+            gender: "MALE",
+            domicileState: "Delhi",
+            aadhaarNumber: "123456789012"
         };
 
         if (!kycPassed) {
@@ -71,64 +89,73 @@ exports.submitStage1 = async (req, res) => {
 
         // Update User profile with KYC data
         await User.findByIdAndUpdate(applicantId, {
-            aadhaarNumber: aadhaarNumber,
+            aadhaarNumber: kycData.aadhaarNumber,
             "basicDetails.fullName": kycData.fullName,
             "basicDetails.dob": kycData.dob,
             "basicDetails.gender": kycData.gender,
+            mobileNumber,
+            emailAddress
         });
 
-        // 2. Mock OCR Check for Bank Passbook
-        // This would call your OCR service (AWS Textract, Google Vision, etc.)
-        console.log(`Running OCR on Bank Passbook: ${passbookUrl}`);
-        const extractedBankName = "Mohit Kumar"; // Mock extracted name
-
-        if (extractedBankName.toLowerCase() !== kycData.fullName.toLowerCase()) {
-            // We can allow it but mark as deficiency, or reject outright depending on strictness
-            // Let's reject for now to enforce the rule
-            // return res.status(400).json({ error: "Name on Bank Passbook does not match Aadhaar Name" });
-        }
-
-        // 3. Create or Update the Application Draft
-        // Check if an application already exists for this user and scheme
+        // Create or Update the Application Draft
         let application = await Application.findOne({ applicantId, schemeId });
 
         if (!application) {
-            // Create new if it doesn't exist
             application = new Application({
                 applicationId: `APP-${Date.now()}`,
                 applicantId,
                 schemeId,
                 status: 'STAGE1_SUBMITTED',
-                submittedData: {
-                    bankDetails
+                personalInformation: {
+                    applicantName: kycData.fullName,
+                    dateOfBirth: kycData.dob,
+                    gender: kycData.gender,
+                    mobileNumber,
+                    emailAddress,
+                    domicileState: kycData.domicileState
+                },
+                financialAndBankingInformation: {
+                    aadhaarNumber: kycData.aadhaarNumber
                 },
                 documents: []
             });
         } else {
-            // Update existing
             application.status = 'STAGE1_SUBMITTED';
-            if (!application.submittedData) application.submittedData = {};
-            application.submittedData.bankDetails = bankDetails;
+            if (!application.personalInformation) application.personalInformation = {};
+            application.personalInformation.applicantName = kycData.fullName;
+            application.personalInformation.dateOfBirth = kycData.dob;
+            application.personalInformation.gender = kycData.gender;
+            application.personalInformation.mobileNumber = mobileNumber;
+            application.personalInformation.emailAddress = emailAddress;
+            application.personalInformation.domicileState = kycData.domicileState;
+            
+            if (!application.financialAndBankingInformation) application.financialAndBankingInformation = {};
+            application.financialAndBankingInformation.aadhaarNumber = kycData.aadhaarNumber;
         }
 
-        // Add or update the passbook document in the array
-        const passbookDocIndex = application.documents.findIndex(d => d.documentType === 'BANK_PASSBOOK');
-        if (passbookDocIndex >= 0) {
-            application.documents[passbookDocIndex].fileUrl = passbookUrl;
-            application.documents[passbookDocIndex].verificationStatus = 'OCR_PASSED';
-        } else {
-            application.documents.push({
-                documentType: 'BANK_PASSBOOK',
-                fileUrl: passbookUrl,
-                verificationStatus: 'OCR_PASSED'
-            });
-        }
+        // Add or update the documents
+        const docsToAdd = [
+            { type: 'AADHAAR_CARD', url: aadhaarUrl }
+        ];
 
-        // Add audit trail entry
+        docsToAdd.forEach(docInfo => {
+            const docIndex = application.documents.findIndex(d => d.documentType === docInfo.type);
+            if (docIndex >= 0) {
+                application.documents[docIndex].fileUrl = docInfo.url;
+                application.documents[docIndex].verificationStatus = 'OCR_PASSED';
+            } else {
+                application.documents.push({
+                    documentType: docInfo.type,
+                    fileUrl: docInfo.url,
+                    verificationStatus: 'OCR_PASSED'
+                });
+            }
+        });
+
         application.auditTrail.push({
             action: 'STAGE_1_SUBMITTED',
             performedBy: applicantId,
-            remarks: 'Aadhaar KYC verified and Bank Passbook uploaded successfully.'
+            remarks: 'Aadhaar OCR verified and Basic Profile created.'
         });
 
         await application.save();
@@ -147,9 +174,9 @@ exports.submitStage1 = async (req, res) => {
 
 exports.submitStage2 = async (req, res) => {
     try {
-        const { applicationId, stCertificateUrl, incomeCertificateUrl } = req.body;
+        const { applicationId, casteCertificateUrl, domicileCertificateUrl, disabilityCertificateUrl } = req.body;
 
-        if (!applicationId || !stCertificateUrl || !incomeCertificateUrl) {
+        if (!applicationId || !casteCertificateUrl || !domicileCertificateUrl) {
             return res.status(400).json({ error: "Missing required fields for Stage 2" });
         }
 
@@ -158,34 +185,40 @@ exports.submitStage2 = async (req, res) => {
             return res.status(404).json({ error: "Application not found" });
         }
 
-        // 1. Mock OCR Check for ST Certificate
-        console.log(`Running OCR on ST Certificate: ${stCertificateUrl}`);
+        // 1. Mock OCR Check for Caste Certificate
+        console.log(`Running OCR on Caste Certificate: ${casteCertificateUrl}`);
         const extractedCategory = "ST";
 
         if (extractedCategory !== "ST" && extractedCategory !== "PVTG") {
             return res.status(400).json({ error: "Certificate verification failed. Category is not ST or PVTG." });
         }
 
-        // 2. Mock OCR Check for Income Certificate
-        console.log(`Running OCR on Income Certificate: ${incomeCertificateUrl}`);
-        const extractedIncome = 450000; // Mock extracted amount
+        // 2. Mock OCR Check for Domicile Certificate
+        console.log(`Running OCR on Domicile Certificate: ${domicileCertificateUrl}`);
+        const extractedState = "Delhi";
 
-        const maxFamilyIncome = application.schemeId?.eligibilityRules?.maxFamilyIncome;
-
-        if (maxFamilyIncome && extractedIncome > maxFamilyIncome) {
-            return res.status(400).json({ error: `Income exceeds the maximum limit of Rs. ${maxFamilyIncome} for this scheme.` });
+        // 3. Mock OCR Check for Disability Certificate (Optional)
+        let isDivyangjan = false;
+        if (disabilityCertificateUrl) {
+            console.log(`Running OCR on Disability Certificate: ${disabilityCertificateUrl}`);
+            isDivyangjan = true;
         }
 
-        // Update application data with extracted income
         application.status = 'STAGE2_SUBMITTED';
-        if (!application.submittedData) application.submittedData = {};
-        application.submittedData.declaredFamilyIncome = extractedIncome;
+        if (!application.personalInformation) application.personalInformation = {};
+        application.personalInformation.category = extractedCategory;
+        application.personalInformation.domicileState = extractedState;
+        application.personalInformation.isDivyangjan = isDivyangjan;
 
         // Add or update documents
         const docsToAdd = [
-            { type: 'ST_CERTIFICATE', url: stCertificateUrl },
-            { type: 'INCOME_CERTIFICATE', url: incomeCertificateUrl }
+            { type: 'CASTE_CERTIFICATE', url: casteCertificateUrl },
+            { type: 'DOMICILE_CERTIFICATE', url: domicileCertificateUrl }
         ];
+
+        if (disabilityCertificateUrl) {
+            docsToAdd.push({ type: 'DISABILITY_CERTIFICATE', url: disabilityCertificateUrl });
+        }
 
         docsToAdd.forEach(docInfo => {
             const docIndex = application.documents.findIndex(d => d.documentType === docInfo.type);
@@ -205,7 +238,7 @@ exports.submitStage2 = async (req, res) => {
         application.auditTrail.push({
             action: 'STAGE_2_SUBMITTED',
             performedBy: application.applicantId,
-            remarks: `ST and Income Certificates verified. Income: Rs. ${extractedIncome}`
+            remarks: `Caste and Domicile Certificates verified.`
         });
 
         await application.save();
@@ -226,37 +259,44 @@ exports.submitStage3 = async (req, res) => {
     try {
         const {
             applicationId,
-            instituteName, courseLevel, courseName, qualifyingMarksPercentage,
-            qualifyingMarksheetUrl, bonafideCertificateUrl, feeReceiptUrl
+            incomeCertificateUrl, passbookUrl, isAadhaarLinkedToBank
         } = req.body;
 
-        if (!applicationId || !instituteName || !qualifyingMarksheetUrl || !bonafideCertificateUrl || !feeReceiptUrl) {
+        if (!applicationId || !incomeCertificateUrl || !passbookUrl) {
             return res.status(400).json({ error: "Missing required fields for Stage 3" });
         }
 
-        const application = await Application.findOne({ applicationId });
+        const application = await Application.findOne({ applicationId }).populate('schemeId');
         if (!application) {
             return res.status(404).json({ error: "Application not found" });
         }
 
-        // Mock OCR Check for Marksheet
-        console.log(`Running OCR on Marksheet: ${qualifyingMarksheetUrl}`);
-        // Assume OCR verifies the marks
-        const extractedMarks = qualifyingMarksPercentage || 85.0; // Mocking
+        // 1. Mock OCR Check for Income Certificate
+        console.log(`Running OCR on Income Certificate: ${incomeCertificateUrl}`);
+        const extractedIncome = 450000; // Mock extracted amount
+        const maxFamilyIncome = application.schemeId?.eligibilityRules?.maxFamilyIncome;
+
+        if (maxFamilyIncome && extractedIncome > maxFamilyIncome) {
+            return res.status(400).json({ error: `Income exceeds the maximum limit of Rs. ${maxFamilyIncome} for this scheme.` });
+        }
+
+        // 2. Mock OCR Check for Bank Passbook
+        console.log(`Running OCR on Bank Passbook: ${passbookUrl}`);
+        const extractedAccountNumber = "1234567890";
+        const extractedIfscCode = "SBIN0001234";
 
         // Update application data
         application.status = 'STAGE3_SUBMITTED';
-        if (!application.submittedData) application.submittedData = {};
-        application.submittedData.instituteName = instituteName;
-        application.submittedData.courseLevel = courseLevel;
-        application.submittedData.courseName = courseName;
-        application.submittedData.qualifyingMarksPercentage = extractedMarks;
+        if (!application.financialAndBankingInformation) application.financialAndBankingInformation = {};
+        application.financialAndBankingInformation.familyIncome = extractedIncome;
+        application.financialAndBankingInformation.bankAccountNumber = extractedAccountNumber;
+        application.financialAndBankingInformation.bankIfscCode = extractedIfscCode;
+        application.financialAndBankingInformation.isAadhaarLinkedToBank = isAadhaarLinkedToBank;
 
         // Add or update documents
         const docsToAdd = [
-            { type: 'QUALIFYING_MARKSHEET', url: qualifyingMarksheetUrl },
-            { type: 'BONAFIDE_CERTIFICATE', url: bonafideCertificateUrl },
-            { type: 'FEE_RECEIPT', url: feeReceiptUrl }
+            { type: 'INCOME_CERTIFICATE', url: incomeCertificateUrl },
+            { type: 'BANK_PASSBOOK', url: passbookUrl }
         ];
 
         docsToAdd.forEach(docInfo => {
@@ -273,13 +313,10 @@ exports.submitStage3 = async (req, res) => {
             }
         });
 
-        // Calculate a mock merit score (e.g. just the marks for now)
-        application.systemCalculatedMeritScore = extractedMarks;
-
         application.auditTrail.push({
             action: 'STAGE_3_SUBMITTED',
             performedBy: application.applicantId,
-            remarks: `Academic details verified. Merit Score: ${extractedMarks}`
+            remarks: `Income and Bank details verified.`
         });
 
         await application.save();
@@ -297,6 +334,66 @@ exports.submitStage3 = async (req, res) => {
 };
 
 exports.submitStage4 = async (req, res) => {
+    try {
+        const { applicationId, dynamicData } = req.body;
+
+        if (!applicationId || !dynamicData) {
+            return res.status(400).json({ error: "Missing required fields for Stage 4" });
+        }
+
+        const application = await Application.findOne({ applicationId });
+        if (!application) {
+            return res.status(404).json({ error: "Application not found" });
+        }
+
+        // Search dynamicData for possible file uploads and move to documents array
+        for (const [key, value] of Object.entries(dynamicData)) {
+            if (typeof value === 'string' && (value.includes('.pdf') || value.includes('.jpg') || value.includes('mock-s3-url'))) {
+                const docType = key.toUpperCase();
+                const docIndex = application.documents.findIndex(d => d.documentType === docType);
+                
+                // TODO: Perform Async OCR processing here
+                // const ocrResult = await processOCR(value, docType);
+                // 
+                // 
+                
+                if (docIndex >= 0) {
+                    application.documents[docIndex].fileUrl = value;
+                    application.documents[docIndex].verificationStatus = 'PENDING'; // update this based on OCR
+                } else {
+                    application.documents.push({
+                        documentType: docType,
+                        fileUrl: value,
+                        verificationStatus: 'PENDING' // update this based on OCR
+                    });
+                }
+            }
+        }
+
+        application.schemeSpecificData = { ...application.schemeSpecificData, ...dynamicData };
+        application.status = 'STAGE4_SUBMITTED';
+
+        application.auditTrail.push({
+            action: 'STAGE_4_SUBMITTED',
+            performedBy: application.applicantId,
+            remarks: `Scheme specific dynamic fields submitted.`
+        });
+
+        await application.save();
+
+        res.status(200).json({
+            message: "Stage 4 completed successfully",
+            applicationId: application.applicationId,
+            status: application.status
+        });
+
+    } catch (error) {
+        console.error("Error in Stage 4 submission:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.submitFinal = async (req, res) => {
     try {
         const { applicationId, declarationAccepted } = req.body;
 
@@ -394,6 +491,23 @@ exports.getMessages = async (req, res) => {
         res.status(200).json(messages);
     } catch (error) {
         console.error("Error fetching messages:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.deleteAccount = async (req, res) => {
+    try {
+        const { applicantId } = req.params;
+        // Delete all applications for this applicant
+        await Application.deleteMany({ applicantId });
+        // Delete all messages
+        await Message.deleteMany({ userId: applicantId });
+        // Delete the user
+        await User.findByIdAndDelete(applicantId);
+        
+        res.status(200).json({ message: "Account and all associated data deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting account:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };

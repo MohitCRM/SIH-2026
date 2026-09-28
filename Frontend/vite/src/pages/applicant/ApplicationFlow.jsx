@@ -38,7 +38,8 @@ const ApplicationFlow = () => {
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
-    aadhaarNumber: '',
+    mobileNumber: '',
+    emailAddress: '',
     accountNumber: '',
     ifscCode: '',
     instituteName: '',
@@ -47,14 +48,27 @@ const ApplicationFlow = () => {
     qualifyingMarksPercentage: ''
   });
 
+  const [mobileVerified, setMobileVerified] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+
   const [files, setFiles] = useState({
-    passbook: null,
+    aadhaar: null,
     caste: null,
+    domicile: null,
+    disability: null,
     income: null,
-    marksheet: null,
-    bonafide: null,
-    fee: null
+    passbook: null
   });
+
+  const [dynamicFormData, setDynamicFormData] = useState({});
+  const [dynamicFiles, setDynamicFiles] = useState({});
+  
+  // Mock config representing what the AI generated and saved in Scheme.dynamicFields
+  const mockStage4Config = [
+    { key: "instituteName", label: "Institute Name", type: "text", required: true },
+    { key: "courseName", label: "Course Name", type: "text", required: true },
+    { key: "marksheet", label: "Previous Year Marksheet", type: "file", required: true }
+  ];
 
   useEffect(() => {
     if (existingAppId) {
@@ -103,6 +117,16 @@ const ApplicationFlow = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleDynamicInputChange = (e) => {
+    setDynamicFormData({ ...dynamicFormData, [e.target.name]: e.target.value });
+  };
+  
+  const handleDynamicFileChange = (e, fileKey) => {
+    if (e.target.files && e.target.files[0]) {
+      setDynamicFiles({ ...dynamicFiles, [fileKey]: e.target.files[0] });
+    }
+  };
+
   const handleStage1Submit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -115,12 +139,9 @@ const ApplicationFlow = () => {
         body: JSON.stringify({
           applicantId: applicantId, // Uses dynamic user
           schemeId: validSchemeId,
-          aadhaarNumber: formData.aadhaarNumber,
-          bankDetails: {
-            accountNumber: formData.accountNumber,
-            ifscCode: formData.ifscCode
-          },
-          passbookUrl: "https://mock-s3-url.com/passbook.jpg" 
+          aadhaarUrl: "https://mock-s3-url.com/aadhaar.jpg",
+          mobileNumber: formData.mobileNumber,
+          emailAddress: formData.emailAddress
         })
       });
       const data = await response.json();
@@ -147,8 +168,9 @@ const ApplicationFlow = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           applicationId: applicationId,
-          stCertificateUrl: "https://mock-s3-url.com/st_cert.pdf",
-          incomeCertificateUrl: "https://mock-s3-url.com/income.pdf"
+          casteCertificateUrl: "https://mock-s3-url.com/caste_cert.pdf",
+          domicileCertificateUrl: "https://mock-s3-url.com/domicile_cert.pdf",
+          disabilityCertificateUrl: files.disability ? "https://mock-s3-url.com/disability_cert.pdf" : null
         })
       });
       const data = await response.json();
@@ -172,13 +194,9 @@ const ApplicationFlow = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           applicationId: applicationId,
-          instituteName: INSTITUTE_LABELS[formData.instituteName] || formData.instituteName,
-          courseLevel: COURSE_LEVEL_LABELS[formData.courseLevel] || formData.courseLevel,
-          courseName: formData.courseName,
-          qualifyingMarksPercentage: parseFloat(formData.qualifyingMarksPercentage),
-          qualifyingMarksheetUrl: "https://mock-s3-url.com/marksheet.pdf",
-          bonafideCertificateUrl: "https://mock-s3-url.com/bonafide.pdf",
-          feeReceiptUrl: "https://mock-s3-url.com/fee.pdf"
+          incomeCertificateUrl: "https://mock-s3-url.com/income.pdf",
+          passbookUrl: "https://mock-s3-url.com/passbook.pdf",
+          isAadhaarLinkedToBank: formData.isAadhaarLinkedToBank
         })
       });
       const data = await response.json();
@@ -192,12 +210,43 @@ const ApplicationFlow = () => {
     }
   };
 
+  const handleStage4Submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const dynamicData = { ...dynamicFormData };
+      for (const [key, file] of Object.entries(dynamicFiles)) {
+        if (file) {
+          dynamicData[key] = `https://mock-s3-url.com/${key}.pdf`;
+        }
+      }
+
+      const response = await fetch('/api/applicant/stage4', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicationId: applicationId,
+          dynamicData
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Submission failed');
+      
+      setCurrentStage(5); 
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleFinalSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/applicant/stage4', {
+      const response = await fetch('/api/applicant/final', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -208,7 +257,8 @@ const ApplicationFlow = () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t('applicationFlow.errors.submissionFailed'));
       
-      setCurrentStage(5); 
+      setCurrentStage(6); 
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -240,7 +290,7 @@ const ApplicationFlow = () => {
 
   const renderStepper = () => (
     <ul className="steps w-full mb-10 px-4">
-      {[1, 2, 3, 4].map((step) => (
+      {[1, 2, 3, 4, 5].map((step) => (
         <li 
           key={step} 
           data-content={currentStage > step ? "✓" : step}
@@ -283,36 +333,63 @@ const ApplicationFlow = () => {
                 <span><strong>{t('applicationFlow.stage1.badge')}</strong> {t('applicationFlow.stage1.info')}</span>
               </div>
 
-              <div>
-                <label className={labelClass}>{t('applicationFlow.stage1.aadhaarLabel')} <span className="text-error">*</span></label>
-                <input required name="aadhaarNumber" value={formData.aadhaarNumber} onChange={handleInputChange} className={inputClass} placeholder={t('applicationFlow.stage1.aadhaarPlaceholder')} pattern="[0-9]{12}" />
-              </div>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className={labelClass}>{t('applicationFlow.stage1.accountLabel')} <span className="text-error">*</span></label>
-                  <input required name="accountNumber" value={formData.accountNumber} onChange={handleInputChange} className={inputClass} placeholder={t('applicationFlow.stage1.accountPlaceholder')} />
+                  <label className={labelClass}>{t('applicationFlow.stage1.mobileLabel', 'Mobile Number')} <span className="text-error">*</span></label>
+                  <div className="flex gap-2">
+                    <input required name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} disabled={mobileVerified} className={inputClass} placeholder="Enter Mobile Number" />
+                    {!mobileVerified ? (
+                      <button type="button" onClick={() => { 
+                        if(formData.mobileNumber) {
+                          const otp = prompt("Mock OTP Verification\nAn OTP has been 'sent' to " + formData.mobileNumber + "\n\nEnter 123456 to verify:");
+                          if (otp === "123456") setMobileVerified(true);
+                          else if (otp !== null) alert("Invalid OTP. Try 123456.");
+                        } 
+                      }} className="btn btn-outline btn-primary">Verify</button>
+                    ) : (
+                      <button type="button" className="btn btn-success text-white" disabled>Verified</button>
+                    )}
+                  </div>
                 </div>
                 <div>
-                  <label className={labelClass}>{t('applicationFlow.stage1.ifscLabel')} <span className="text-error">*</span></label>
-                  <input required name="ifscCode" value={formData.ifscCode} onChange={handleInputChange} className={inputClass} placeholder={t('applicationFlow.stage1.ifscPlaceholder')} />
+                  <label className={labelClass}>{t('applicationFlow.stage1.emailLabel', 'Email Address')} <span className="text-error">*</span></label>
+                  <div className="flex gap-2">
+                    <input required type="email" name="emailAddress" value={formData.emailAddress} onChange={handleInputChange} disabled={emailVerified} className={inputClass} placeholder="Enter Email Address" />
+                    {!emailVerified ? (
+                      <button type="button" onClick={() => { 
+                        if(formData.emailAddress) {
+                          const otp = prompt("Mock OTP Verification\nAn OTP has been 'sent' to " + formData.emailAddress + "\n\nEnter 123456 to verify:");
+                          if (otp === "123456") setEmailVerified(true);
+                          else if (otp !== null) alert("Invalid OTP. Try 123456.");
+                        } 
+                      }} className="btn btn-outline btn-primary">Verify</button>
+                    ) : (
+                      <button type="button" className="btn btn-success text-white" disabled>Verified</button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className={labelClass}>{t('applicationFlow.stage1.passbookLabel')} <span className="text-error">*</span></label>
-                <div
-                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${files.passbook ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
-                  onClick={() => document.getElementById('passbook-upload').click()}
-                >
-                  <UploadCloud className={`mx-auto mb-3 ${files.passbook ? 'text-success' : 'text-primary'}`} size={32} />
-                  <p className={`text-sm font-semibold ${files.passbook ? 'text-success' : 'text-base-content'}`}>
-                    {files.passbook ? files.passbook.name : t('applicationFlow.stage1.uploadPrompt')}
-                  </p>
-                  {!files.passbook && <p className="text-xs text-base-content/50 mt-1">{t('applicationFlow.stage1.supportedFormats')}</p>}
-                  <input type="file" id="passbook-upload" className="hidden" onChange={(e) => handleFileChange(e, 'passbook')} />
+
+              {mobileVerified && emailVerified && (
+                <div className="grid grid-cols-1 gap-6 slide-up">
+                  <div>
+                    <label className={labelClass}>{t('applicationFlow.stage1.aadhaarUploadLabel', 'Upload Aadhaar Card (Front & Back)')} <span className="text-error">*</span></label>
+                    <div
+                      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.aadhaar ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                      onClick={() => document.getElementById('aadhaar-upload').click()}
+                    >
+                      <UploadCloud className={`mx-auto mb-2 ${files.aadhaar ? 'text-success' : 'text-primary'}`} size={24} />
+                      <p className={`text-sm font-semibold ${files.aadhaar ? 'text-success' : 'text-base-content'}`}>
+                        {files.aadhaar ? files.aadhaar.name : 'Click to upload Aadhaar'}
+                      </p>
+                      <input type="file" id="aadhaar-upload" className="hidden" onChange={(e) => handleFileChange(e, 'aadhaar')} />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+
               <div className="flex justify-end pt-6 border-t border-base-200">
-                <button type="submit" disabled={loading} className="btn btn-primary gap-2 px-8">
+                <button type="submit" disabled={loading || !mobileVerified || !emailVerified || !files.aadhaar} className="btn btn-primary gap-2 px-8">
                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
                 </button>
               </div>
@@ -327,34 +404,46 @@ const ApplicationFlow = () => {
               </div>
 
               <div>
-                <label className={labelClass}>{t('applicationFlow.stage2.casteLabel')} <span className="text-error">*</span></label>
+                <label className={labelClass}>{t('applicationFlow.stage2.casteLabel', 'Caste Certificate (ST/PVTG)')} <span className="text-error">*</span></label>
                 <div
                   className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.caste ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
                   onClick={() => document.getElementById('caste-upload').click()}
                 >
                   <UploadCloud className={`mx-auto mb-2 ${files.caste ? 'text-success' : 'text-primary'}`} size={24} />
                   <p className={`text-sm font-semibold ${files.caste ? 'text-success' : 'text-base-content'}`}>
-                    {files.caste ? files.caste.name : t('applicationFlow.stage2.selectDocument')}
+                    {files.caste ? files.caste.name : 'Select Caste Certificate'}
                   </p>
                   <input type="file" id="caste-upload" className="hidden" onChange={(e) => handleFileChange(e, 'caste')} />
                 </div>
               </div>
               <div>
-                <label className={labelClass}>{t('applicationFlow.stage2.incomeLabel')} <span className="text-error">*</span></label>
+                <label className={labelClass}>{t('applicationFlow.stage2.domicileLabel', 'Domicile Certificate')} <span className="text-error">*</span></label>
                 <div
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.income ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
-                  onClick={() => document.getElementById('income-upload').click()}
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.domicile ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                  onClick={() => document.getElementById('domicile-upload').click()}
                 >
-                  <UploadCloud className={`mx-auto mb-2 ${files.income ? 'text-success' : 'text-primary'}`} size={24} />
-                  <p className={`text-sm font-semibold ${files.income ? 'text-success' : 'text-base-content'}`}>
-                    {files.income ? files.income.name : t('applicationFlow.stage2.selectDocument')}
+                  <UploadCloud className={`mx-auto mb-2 ${files.domicile ? 'text-success' : 'text-primary'}`} size={24} />
+                  <p className={`text-sm font-semibold ${files.domicile ? 'text-success' : 'text-base-content'}`}>
+                    {files.domicile ? files.domicile.name : 'Select Domicile Certificate'}
                   </p>
-                  {!files.income && <p className="text-xs text-base-content/50 mt-1">{t('applicationFlow.stage2.incomeNote')}</p>}
-                  <input type="file" id="income-upload" className="hidden" onChange={(e) => handleFileChange(e, 'income')} />
+                  <input type="file" id="domicile-upload" className="hidden" onChange={(e) => handleFileChange(e, 'domicile')} />
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>{t('applicationFlow.stage2.disabilityLabel', 'Disability Certificate (Optional)')}</label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.disability ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                  onClick={() => document.getElementById('disability-upload').click()}
+                >
+                  <UploadCloud className={`mx-auto mb-2 ${files.disability ? 'text-success' : 'text-primary'}`} size={24} />
+                  <p className={`text-sm font-semibold ${files.disability ? 'text-success' : 'text-base-content'}`}>
+                    {files.disability ? files.disability.name : 'Select Disability Certificate (If Applicable)'}
+                  </p>
+                  <input type="file" id="disability-upload" className="hidden" onChange={(e) => handleFileChange(e, 'disability')} />
                 </div>
               </div>
               <div className="flex justify-end pt-6 border-t border-base-200">
-                <button type="submit" disabled={loading} className="btn btn-primary gap-2 px-8">
+                <button type="submit" disabled={loading || !files.caste || !files.domicile} className="btn btn-primary gap-2 px-8">
                    {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
                 </button>
               </div>
@@ -369,64 +458,85 @@ const ApplicationFlow = () => {
               </div>
 
               <div>
-                <label className={labelClass}>{t('applicationFlow.stage3.instituteLabel')} <span className="text-error">*</span></label>
-                <select name="instituteName" value={formData.instituteName} onChange={handleInputChange} required className="select select-bordered w-full">
-                  <option value="" disabled>{t('applicationFlow.stage3.selectInstitute')}</option>
-                  <option value="iit_bombay">{t('institutes.iit_bombay')}</option>
-                  <option value="nit_trichy">{t('institutes.nit_trichy')}</option>
-                  <option value="iim_ahmedabad">{t('institutes.iim_ahmedabad')}</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClass}>{t('applicationFlow.stage3.courseLevelLabel')} <span className="text-error">*</span></label>
-                  <select name="courseLevel" value={formData.courseLevel} onChange={handleInputChange} className="select select-bordered w-full">
-                    <option value="graduate">{t('courseLevels.graduate')}</option>
-                    <option value="post_graduate">{t('courseLevels.post_graduate')}</option>
-                  </select>
+                <label className={labelClass}>{t('applicationFlow.stage3.incomeLabel', 'Income Certificate')} <span className="text-error">*</span></label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.income ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                  onClick={() => document.getElementById('income-upload').click()}
+                >
+                  <UploadCloud className={`mx-auto mb-2 ${files.income ? 'text-success' : 'text-primary'}`} size={24} />
+                  <p className={`text-sm font-semibold ${files.income ? 'text-success' : 'text-base-content'}`}>
+                    {files.income ? files.income.name : 'Select Income Certificate'}
+                  </p>
+                  <input type="file" id="income-upload" className="hidden" onChange={(e) => handleFileChange(e, 'income')} />
                 </div>
-                <div>
-                  <label className={labelClass}>{t('applicationFlow.stage3.courseNameLabel')} <span className="text-error">*</span></label>
-                  <input required name="courseName" value={formData.courseName} onChange={handleInputChange} className={inputClass} placeholder={t('applicationFlow.stage3.courseNamePlaceholder')} />
-                </div>
-              </div>
-               <div>
-                  <label className={labelClass}>{t('applicationFlow.stage3.marksLabel')} <span className="text-error">*</span></label>
-                  <input required type="number" step="0.1" name="qualifyingMarksPercentage" value={formData.qualifyingMarksPercentage} onChange={handleInputChange} className={inputClass} placeholder={t('applicationFlow.stage3.marksPlaceholder')} />
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                <div 
-                  className={`border border-base-300 rounded-xl p-4 text-center cursor-pointer transition-colors shadow-sm ${files.marksheet ? 'border-success bg-success/10' : 'bg-base-200/50 hover:bg-base-200'}`}
-                  onClick={() => document.getElementById('marksheet-upload').click()}
+              <div>
+                <label className={labelClass}>{t('applicationFlow.stage3.passbookLabel', 'Bank Passbook / Cancelled Cheque')} <span className="text-error">*</span></label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.passbook ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                  onClick={() => document.getElementById('passbook-upload').click()}
                 >
-                   <p className={`text-sm font-semibold mb-2 ${files.marksheet ? 'text-success' : 'text-base-content'}`}>
-                     {files.marksheet ? files.marksheet.name : t('applicationFlow.stage3.marksheetLabel')}
-                   </p>
-                   <UploadCloud className={`mx-auto ${files.marksheet ? 'text-success' : 'text-primary'}`} size={20} />
-                   <input type="file" id="marksheet-upload" className="hidden" onChange={(e) => handleFileChange(e, 'marksheet')} />
-                </div>
-                <div 
-                  className={`border border-base-300 rounded-xl p-4 text-center cursor-pointer transition-colors shadow-sm ${files.bonafide ? 'border-success bg-success/10' : 'bg-base-200/50 hover:bg-base-200'}`}
-                  onClick={() => document.getElementById('bonafide-upload').click()}
-                >
-                   <p className={`text-sm font-semibold mb-2 ${files.bonafide ? 'text-success' : 'text-base-content'}`}>
-                     {files.bonafide ? files.bonafide.name : t('applicationFlow.stage3.bonafideLabel')}
-                   </p>
-                   <UploadCloud className={`mx-auto ${files.bonafide ? 'text-success' : 'text-primary'}`} size={20} />
-                   <input type="file" id="bonafide-upload" className="hidden" onChange={(e) => handleFileChange(e, 'bonafide')} />
-                </div>
-                 <div 
-                   className={`border border-base-300 rounded-xl p-4 text-center cursor-pointer transition-colors shadow-sm ${files.fee ? 'border-success bg-success/10' : 'bg-base-200/50 hover:bg-base-200'}`}
-                   onClick={() => document.getElementById('fee-upload').click()}
-                 >
-                   <p className={`text-sm font-semibold mb-2 ${files.fee ? 'text-success' : 'text-base-content'}`}>
-                     {files.fee ? files.fee.name : t('applicationFlow.stage3.feeLabel')}
-                   </p>
-                   <UploadCloud className={`mx-auto ${files.fee ? 'text-success' : 'text-primary'}`} size={20} />
-                   <input type="file" id="fee-upload" className="hidden" onChange={(e) => handleFileChange(e, 'fee')} />
+                  <UploadCloud className={`mx-auto mb-2 ${files.passbook ? 'text-success' : 'text-primary'}`} size={24} />
+                  <p className={`text-sm font-semibold ${files.passbook ? 'text-success' : 'text-base-content'}`}>
+                    {files.passbook ? files.passbook.name : 'Select Bank Passbook'}
+                  </p>
+                  <input type="file" id="passbook-upload" className="hidden" onChange={(e) => handleFileChange(e, 'passbook')} />
                 </div>
               </div>
+
+              <label className="flex items-start gap-3 p-5 border border-base-300 rounded-xl cursor-pointer transition-colors hover:bg-base-200">
+                <input type="checkbox" name="isAadhaarLinkedToBank" checked={formData.isAadhaarLinkedToBank || false} onChange={(e) => setFormData({...formData, isAadhaarLinkedToBank: e.target.checked})} className="checkbox checkbox-primary mt-1 flex-shrink-0" />
+                <span className="text-sm font-medium text-base-content">
+                  {t('applicationFlow.stage3.aadhaarLinked', 'I confirm that this bank account is linked to my Aadhaar number for Direct Benefit Transfer (DBT).')}
+                </span>
+              </label>
+
+              <div className="flex justify-end pt-6 border-t border-base-200">
+                <button type="submit" disabled={loading || !files.income || !files.passbook} className="btn btn-primary gap-2 px-8">
+                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
+                </button>
+              </div>
+            </form>
+          )}
+
+          {currentStage === 4 && (
+            <form onSubmit={handleStage4Submit} className="space-y-6 slide-up">
+              <div className="alert alert-info">
+                <Info size={24} />
+                <span><strong>Scheme Specific Details</strong> Please provide the following additional details required by this specific scheme.</span>
+              </div>
+              
+              {mockStage4Config.map(field => (
+                <div key={field.key}>
+                  <label className={labelClass}>{field.label} {field.required && <span className="text-error">*</span>}</label>
+                  
+                  {field.type === 'text' && (
+                    <input 
+                      type="text" 
+                      name={field.key} 
+                      value={dynamicFormData[field.key] || ''} 
+                      onChange={handleDynamicInputChange} 
+                      required={field.required} 
+                      className={inputClass} 
+                      placeholder={`Enter ${field.label}`} 
+                    />
+                  )}
+                  
+                  {field.type === 'file' && (
+                    <div
+                      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${dynamicFiles[field.key] ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                      onClick={() => document.getElementById(`upload-${field.key}`).click()}
+                    >
+                      <UploadCloud className={`mx-auto mb-2 ${dynamicFiles[field.key] ? 'text-success' : 'text-primary'}`} size={24} />
+                      <p className={`text-sm font-semibold ${dynamicFiles[field.key] ? 'text-success' : 'text-base-content'}`}>
+                        {dynamicFiles[field.key] ? dynamicFiles[field.key].name : `Select ${field.label}`}
+                      </p>
+                      <input type="file" id={`upload-${field.key}`} className="hidden" onChange={(e) => handleDynamicFileChange(e, field.key)} required={field.required && !dynamicFiles[field.key]} />
+                    </div>
+                  )}
+                </div>
+              ))}
 
               <div className="flex justify-end pt-6 border-t border-base-200">
                 <button type="submit" disabled={loading} className="btn btn-primary gap-2 px-8">
@@ -436,30 +546,27 @@ const ApplicationFlow = () => {
             </form>
           )}
 
-          {currentStage === 4 && (
+          {currentStage === 5 && (
             <form onSubmit={handleFinalSubmit} className="space-y-8 slide-up">
                <div className="alert alert-info">
-                <Info size={24} />
-                <span><strong>{t('applicationFlow.stage4.badge')}</strong> {t('applicationFlow.stage4.info')}</span>
-              </div>
-
-              <div className="bg-base-200 rounded-xl p-6 space-y-4 border border-base-300">
+                 <Info size={24} />
+                 <span><strong>{t('applicationFlow.stage4.badge')}</strong> Review your application and submit.</span>
+               </div>
+               
+               <div className="bg-base-200 rounded-xl p-6 space-y-4 border border-base-300">
                  <div className="flex justify-between border-b border-base-300 pb-3">
                    <span className="text-base-content/60 font-medium">{t('applicationFlow.stage4.applicationIdLabel')}</span>
                    <span className="font-bold text-base-content">{applicationId}</span>
                  </div>
-                 <div className="flex justify-between border-b border-base-300 pb-3">
-                   <span className="text-base-content/60 font-medium">{t('applicationFlow.stage4.instituteLabel')}</span>
-                   <span className="font-bold text-right text-base-content">{formData.instituteName ? t(`institutes.${formData.instituteName}`) : ''}</span>
-                 </div>
-                 <div className="flex justify-between border-b border-base-300 pb-3">
-                   <span className="text-base-content/60 font-medium">{t('applicationFlow.stage4.courseLabel')}</span>
-                   <span className="font-bold text-right text-base-content">{t(`courseLevels.${formData.courseLevel}`)} - {formData.courseName}</span>
-                 </div>
-                 <div className="flex justify-between pb-1 pt-1">
-                   <span className="text-base-content/60 font-medium">{t('applicationFlow.stage4.meritScoreLabel')}</span>
-                   <span className="font-bold text-success text-lg">{formData.qualifyingMarksPercentage}%</span>
-                 </div>
+                 {/* Dynamically render the summary of Stage 4 values */}
+                 {mockStage4Config.map(field => (
+                   <div key={`summary-${field.key}`} className="flex justify-between border-b border-base-300 pb-3">
+                     <span className="text-base-content/60 font-medium">{field.label}</span>
+                     <span className="font-bold text-right text-base-content">
+                        {field.type === 'file' ? (dynamicFiles[field.key] ? 'Document Uploaded' : 'Pending') : dynamicFormData[field.key]}
+                     </span>
+                   </div>
+                 ))}
               </div>
 
               <label className="flex items-start gap-3 p-5 border border-warning bg-warning/10 rounded-xl cursor-pointer transition-colors hover:bg-warning/20">
@@ -480,7 +587,7 @@ const ApplicationFlow = () => {
             </form>
           )}
 
-          {currentStage === 5 && (
+          {currentStage === 6 && (
             <div className="text-center py-16 slide-up">
               <div className="w-24 h-24 bg-success/20 border-4 border-success/30 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle2 size={48} className="text-success" />

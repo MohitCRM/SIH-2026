@@ -68,7 +68,7 @@ const VerificationView = () => {
     return (
       <div className="p-8">
         <div className="alert alert-error shadow-lg">
-          <AlertCircle size={24} /> 
+          <AlertCircle size={24} />
           <span>{t('verificationView.errors.errorPrefix')}: {error || t('verificationView.errors.notFound')}</span>
         </div>
       </div>
@@ -77,7 +77,7 @@ const VerificationView = () => {
 
   return (
     <div className="p-4 h-[calc(100vh-64px)] flex flex-col fade-in overflow-hidden">
-      
+
       <div className="flex justify-between items-center mb-4 shrink-0">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/officer')} className="btn btn-square btn-ghost border border-base-200 shadow-sm bg-base-100">
@@ -90,16 +90,16 @@ const VerificationView = () => {
             <p className="text-sm font-medium text-base-content/60">{application.applicantId?.basicDetails?.fullName || t('common.unknownStudent')} - {application.schemeId?.name || t('common.unknownScheme')}</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
-          <button 
+          <button
             disabled={actionLoading}
             onClick={() => handleAction('MARK_DEFECTIVE')}
             className="btn btn-error btn-outline gap-2"
           >
             <FileWarning size={18} /> {t('verificationView.buttons.markDefective')}
           </button>
-          <button 
+          <button
             disabled={actionLoading}
             onClick={() => handleAction('APPROVE')}
             className="btn btn-success text-white gap-2"
@@ -111,7 +111,7 @@ const VerificationView = () => {
       </div>
 
       <div className="flex-1 flex gap-4 min-h-0">
-        
+
         {/* Left Side: Document Viewer */}
         <div className="w-2/3 card bg-base-100 border border-base-200 shadow-sm rounded-xl flex flex-col overflow-hidden">
           <div className="bg-base-200/50 border-b border-base-200 p-2 flex gap-2 overflow-x-auto">
@@ -127,28 +127,28 @@ const VerificationView = () => {
             ))}
           </div>
           <div className="flex-1 bg-base-300 p-4 relative">
-             {activeDocument ? (
-               <iframe 
-                 src={activeDocument.fileUrl} 
-                 className="w-full h-full rounded shadow-sm bg-white"
-                 title="Document Viewer"
-               ></iframe>
-             ) : (
-               <div className="flex items-center justify-center h-full text-base-content/50 font-medium">
-                 {t('verificationView.noDocumentSelected')}
-               </div>
-             )}
+            {activeDocument ? (
+              <iframe
+                src={activeDocument.fileUrl}
+                className="w-full h-full rounded shadow-sm bg-white"
+                title="Document Viewer"
+              ></iframe>
+            ) : (
+              <div className="flex items-center justify-center h-full text-base-content/50 font-medium">
+                {t('verificationView.noDocumentSelected')}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right Side: Data Panel */}
         <div className="w-1/3 card bg-base-100 border border-base-200 shadow-sm rounded-xl overflow-y-auto">
           <div className="p-4 border-b border-base-200 bg-base-200/50 sticky top-0">
-             <h2 className="font-bold text-base-content flex items-center gap-2"><CheckCircle size={18} className="text-success" /> {t('verificationView.panel.title')}</h2>
+            <h2 className="font-bold text-base-content flex items-center gap-2"><CheckCircle size={18} className="text-success" /> {t('verificationView.panel.title')}</h2>
           </div>
-          
+
           <div className="p-5 space-y-6">
-            
+
             <div>
               <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.identityDetails')}</h3>
               <div className="space-y-4">

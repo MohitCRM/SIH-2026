@@ -6,11 +6,18 @@ const schemeSchema = new mongoose.Schema({
   description: { type: String },
   status: { type: String, enum: ["ACTIVE", "INACTIVE"], default: "ACTIVE" },
   eligibilityRules: {
-    maxFamilyIncome: { type: Number }, // Can be null for no limit
+    maxFamilyIncome: { type: Number },
     requiredDegrees: [{ type: String }],
     minAge: { type: Number },
     maxAge: { type: Number }
   },
+  dynamicFields: [{
+    key: { type: String, required: true },
+    label: { type: String, required: true },
+    type: { type: String, enum: ["text", "number", "file", "select"], required: true },
+    required: { type: Boolean, default: true },
+    options: [{ type: String }]
+  }],
   requiredDocuments: [{
     documentType: { type: String },
     isMandatory: { type: Boolean, default: true },
