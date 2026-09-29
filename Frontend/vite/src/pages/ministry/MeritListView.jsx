@@ -12,6 +12,9 @@ const MeritListView = () => {
   const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [modalError, setModalError] = useState("");
 
   useEffect(() => {
     const fetchMeritList = async () => {
@@ -48,17 +51,14 @@ const MeritListView = () => {
       }
   };
 
-  const handleBulkApprove = async () => {
-    if (selectedIds.length === 0) {
-      alert(t('meritListView.errors.selectAtLeastOne'));
-      return;
-    }
+  const handleBulkApproveClick = () => {
+    setModalError("");
+    setShowConfirmModal(true);
+  };
 
-    if (!window.confirm(t('meritListView.confirmBulkApprove', { count: selectedIds.length }))) {
-        return;
-    }
-    
+  const confirmBulkApprove = async () => {
     setActionLoading(true);
+    setShowConfirmModal(false);
     try {
       const response = await fetch('/api/ministry/approve-merit-list', {
         method: 'POST',
@@ -69,10 +69,13 @@ const MeritListView = () => {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || t('meritListView.errors.approveFailed'));
       
-      alert(result.message);
-      navigate('/ministry');
+      setShowSuccessToast(true);
+      setTimeout(() => {
+        setShowSuccessToast(false);
+        navigate('/ministry/schemes');
+      }, 2000);
     } catch (err) {
-      alert(err.message);
+      setModalError(err.message);
     } finally {
       setActionLoading(false);
     }
@@ -101,7 +104,7 @@ const MeritListView = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto fade-in">
+    <div className="w-full fade-in">
       
       <div className="flex justify-between items-end mb-8 border-b border-base-200 pb-6">
         <div>
@@ -132,7 +135,7 @@ const MeritListView = () => {
 
           <button
             disabled={actionLoading || selectedIds.length === 0}
-            onClick={handleBulkApprove}
+            onClick={handleBulkApproveClick}
             className="btn btn-accent text-accent-content gap-2"
           >
             {actionLoading ? <span className="loading loading-spinner loading-sm"></span> : <IndianRupee size={18} />}
@@ -201,6 +204,49 @@ const MeritListView = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">{t('meritListView.confirmBulkApproveTitle') || "Confirm Bulk Approval"}</h3>
+            <p className="py-4">
+              {t('meritListView.confirmBulkApprove', { count: selectedIds.length }) || `Are you sure you want to approve ${selectedIds.length} students and generate their Sanction Letters?`}
+            </p>
+            <div className="modal-action">
+              <button className="btn" onClick={() => setShowConfirmModal(false)}>Cancel</button>
+              <button className="btn btn-accent text-accent-content gap-2" onClick={confirmBulkApprove}>
+                <IndianRupee size={16}/> Approve & Disburse
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {modalError && (
+        <div className="modal modal-open">
+          <div className="modal-box border-t-4 border-error">
+            <h3 className="font-bold text-lg text-error flex items-center gap-2">
+              <AlertCircle size={20} /> Error
+            </h3>
+            <p className="py-4">{modalError}</p>
+            <div className="modal-action">
+              <button className="btn" onClick={() => setModalError("")}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Toast */}
+      {showSuccessToast && (
+        <div className="toast toast-top toast-center z-50">
+          <div className="alert alert-success shadow-lg">
+            <CheckCircle size={24} />
+            <span className="font-bold text-white">Funds Disbursed successfully!</span>
+          </div>
+        </div>
+      )}
 
     </div>
   );

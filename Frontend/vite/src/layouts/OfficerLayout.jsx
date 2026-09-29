@@ -12,7 +12,6 @@ const OfficerLayout = () => {
   const navItems = [
     { name: 'Dashboard', label: t('common.dashboard'), path: '/officer', icon: <LayoutDashboard size={20} />, exact: true },
     { name: 'Approved', label: t('layouts.officer.nav.approved'), path: '/officer/approved', icon: <CheckCircle size={20} /> },
-    { name: 'Reports', label: t('layouts.officer.nav.reports'), path: '/officer/reports', icon: <FileText size={20} /> },
   ];
 
   return (

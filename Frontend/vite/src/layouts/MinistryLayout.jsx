@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Users, CreditCard, LogOut, Building, Briefcase, Menu, User } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, LogOut, Building, Briefcase, Menu, User, FileText } from 'lucide-react';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const MinistryLayout = () => {
@@ -11,7 +11,7 @@ const MinistryLayout = () => {
 
   const navItems = [
     { name: 'Dashboard', label: t('common.dashboard'), path: '/ministry', icon: <LayoutDashboard size={20} />, exact: true },
-    { name: 'Merit Lists', label: t('layouts.ministry.nav.meritLists'), path: '/ministry/merit-lists', icon: <Users size={20} /> },
+    { name: 'Scheme Management', label: 'Scheme Management', path: '/ministry/schemes', icon: <FileText size={20} /> },
     { name: 'Fund Disbursement', label: t('layouts.ministry.nav.fundDisbursement'), path: '/ministry/funds', icon: <CreditCard size={20} /> },
   ];
 

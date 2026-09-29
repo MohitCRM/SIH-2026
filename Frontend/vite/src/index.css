@@ -24,21 +24,7 @@ body {
   @apply bg-base-100 border-r border-base-200 shadow-sm;
 }
 
-.btn-primary {
-  @apply btn btn-primary;
-}
 
-.btn-secondary {
-  @apply btn btn-outline;
-}
-
-.btn-danger {
-  @apply btn btn-error;
-}
-
-.btn-success {
-  @apply btn btn-success;
-}
 
 /* Form inputs mapping */
 input:not([type="checkbox"]):not([type="radio"]),

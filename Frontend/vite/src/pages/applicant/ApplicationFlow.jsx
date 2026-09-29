@@ -27,11 +27,11 @@ const ApplicationFlow = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const existingAppId = searchParams.get('applicationId');
   const { t } = useTranslation();
-  
+
   // Get real user from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const applicantId = user._id || "64a7c2f1b2a3d4e5f6a7b8c9"; // Fallback
-  
+
   const [currentStage, setCurrentStage] = useState(1);
   const [applicationId, setApplicationId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -62,7 +62,7 @@ const ApplicationFlow = () => {
 
   const [dynamicFormData, setDynamicFormData] = useState({});
   const [dynamicFiles, setDynamicFiles] = useState({});
-  
+
   // Mock config representing what the AI generated and saved in Scheme.dynamicFields
   const mockStage4Config = [
     { key: "instituteName", label: "Institute Name", type: "text", required: true },
@@ -79,15 +79,15 @@ const ApplicationFlow = () => {
           if (!res.ok) throw new Error("Failed to load draft");
           const data = await res.json();
           setApplicationId(data.applicationId);
-          
+
           setFormData(prev => ({
-             ...prev,
-             accountNumber: data.submittedData?.bankDetails?.accountNumber || '',
-             ifscCode: data.submittedData?.bankDetails?.ifscCode || '',
-             instituteName: data.submittedData?.instituteName || '',
-             courseLevel: data.submittedData?.courseLevel || 'graduate',
-             courseName: data.submittedData?.courseName || '',
-             qualifyingMarksPercentage: data.submittedData?.qualifyingMarksPercentage || ''
+            ...prev,
+            accountNumber: data.submittedData?.bankDetails?.accountNumber || '',
+            ifscCode: data.submittedData?.bankDetails?.ifscCode || '',
+            instituteName: data.submittedData?.instituteName || '',
+            courseLevel: data.submittedData?.courseLevel || 'graduate',
+            courseName: data.submittedData?.courseName || '',
+            qualifyingMarksPercentage: data.submittedData?.qualifyingMarksPercentage || ''
           }));
 
           const trail = data.auditTrail || [];
@@ -120,7 +120,7 @@ const ApplicationFlow = () => {
   const handleDynamicInputChange = (e) => {
     setDynamicFormData({ ...dynamicFormData, [e.target.name]: e.target.value });
   };
-  
+
   const handleDynamicFileChange = (e, fileKey) => {
     if (e.target.files && e.target.files[0]) {
       setDynamicFiles({ ...dynamicFiles, [fileKey]: e.target.files[0] });
@@ -139,7 +139,7 @@ const ApplicationFlow = () => {
         body: JSON.stringify({
           applicantId: applicantId, // Uses dynamic user
           schemeId: validSchemeId,
-          aadhaarUrl: "https://mock-s3-url.com/aadhaar.jpg",
+          aadhaarUrl: "/dummy_documents/1_Aadhaar_Card.pdf",
           mobileNumber: formData.mobileNumber,
           emailAddress: formData.emailAddress
         })
@@ -168,9 +168,9 @@ const ApplicationFlow = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           applicationId: applicationId,
-          casteCertificateUrl: "https://mock-s3-url.com/caste_cert.pdf",
-          domicileCertificateUrl: "https://mock-s3-url.com/domicile_cert.pdf",
-          disabilityCertificateUrl: files.disability ? "https://mock-s3-url.com/disability_cert.pdf" : null
+          casteCertificateUrl: "/dummy_documents/2_Caste_Certificate.pdf",
+          domicileCertificateUrl: "/dummy_documents/3_Domicile_Certificate.pdf",
+          disabilityCertificateUrl: files.disability ? "/dummy_documents/1_Aadhaar_Card.pdf" : null
         })
       });
       const data = await response.json();
@@ -194,8 +194,9 @@ const ApplicationFlow = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           applicationId: applicationId,
-          incomeCertificateUrl: "https://mock-s3-url.com/income.pdf",
-          passbookUrl: "https://mock-s3-url.com/passbook.pdf",
+          incomeCertificateUrl: "/dummy_documents/4_Income_Certificate.pdf",
+          passbookUrl: "/dummy_documents/6_Bank_Passbook.pdf",
+          panCardUrl: "/dummy_documents/5_PAN_Card.pdf",
           isAadhaarLinkedToBank: formData.isAadhaarLinkedToBank
         })
       });
@@ -218,7 +219,11 @@ const ApplicationFlow = () => {
       const dynamicData = { ...dynamicFormData };
       for (const [key, file] of Object.entries(dynamicFiles)) {
         if (file) {
-          dynamicData[key] = `https://mock-s3-url.com/${key}.pdf`;
+          if (key.toLowerCase().includes('marksheet')) {
+            dynamicData[key] = `/dummy_documents/7_12th_Marksheet.pdf`;
+          } else {
+            dynamicData[key] = `/dummy_documents/8_Admission_Fee_Receipt.pdf`;
+          }
         }
       }
 
@@ -232,8 +237,8 @@ const ApplicationFlow = () => {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Submission failed');
-      
-      setCurrentStage(5); 
+
+      setCurrentStage(5);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -256,8 +261,8 @@ const ApplicationFlow = () => {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t('applicationFlow.errors.submissionFailed'));
-      
-      setCurrentStage(6); 
+
+      setCurrentStage(6);
 
     } catch (err) {
       setError(err.message);
@@ -279,7 +284,7 @@ const ApplicationFlow = () => {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || t('applicationFlow.errors.saveDraftFailed'));
-      
+
       navigate('/applicant/drafts');
     } catch (err) {
       setError(err.message);
@@ -291,8 +296,8 @@ const ApplicationFlow = () => {
   const renderStepper = () => (
     <ul className="steps w-full mb-10 px-4">
       {[1, 2, 3, 4, 5].map((step) => (
-        <li 
-          key={step} 
+        <li
+          key={step}
           data-content={currentStage > step ? "✓" : step}
           className={`step ${currentStage >= step ? 'step-primary font-bold' : ''}`}
         >
@@ -315,7 +320,7 @@ const ApplicationFlow = () => {
           <h1 className="text-3xl font-bold text-base-content">{t('applicationFlow.header.title')}</h1>
           <p className="text-base-content/60 font-medium">{t('applicantDashboard.topClass.title')}</p>
         </div>
-        
+
         {currentStage < 5 && renderStepper()}
 
         {error && (
@@ -339,12 +344,12 @@ const ApplicationFlow = () => {
                   <div className="flex gap-2">
                     <input required name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} disabled={mobileVerified} className={inputClass} placeholder="Enter Mobile Number" />
                     {!mobileVerified ? (
-                      <button type="button" onClick={() => { 
-                        if(formData.mobileNumber) {
-                          const otp = prompt("Mock OTP Verification\nAn OTP has been 'sent' to " + formData.mobileNumber + "\n\nEnter 123456 to verify:");
+                      <button type="button" onClick={() => {
+                        if (formData.mobileNumber) {
+                          const otp = prompt("Mock OTP Verification\nAn OTP has been sent to " + formData.mobileNumber + "\n\nEnter OTP:");
                           if (otp === "123456") setMobileVerified(true);
-                          else if (otp !== null) alert("Invalid OTP. Try 123456.");
-                        } 
+                          else if (otp !== null) alert("Invalid OTP.");
+                        }
                       }} className="btn btn-outline btn-primary">Verify</button>
                     ) : (
                       <button type="button" className="btn btn-success text-white" disabled>Verified</button>
@@ -356,12 +361,12 @@ const ApplicationFlow = () => {
                   <div className="flex gap-2">
                     <input required type="email" name="emailAddress" value={formData.emailAddress} onChange={handleInputChange} disabled={emailVerified} className={inputClass} placeholder="Enter Email Address" />
                     {!emailVerified ? (
-                      <button type="button" onClick={() => { 
-                        if(formData.emailAddress) {
-                          const otp = prompt("Mock OTP Verification\nAn OTP has been 'sent' to " + formData.emailAddress + "\n\nEnter 123456 to verify:");
+                      <button type="button" onClick={() => {
+                        if (formData.emailAddress) {
+                          const otp = prompt("Mock OTP Verification\nAn OTP has been sent to " + formData.emailAddress + "\n\nEnter OTP:");
                           if (otp === "123456") setEmailVerified(true);
-                          else if (otp !== null) alert("Invalid OTP. Try 123456.");
-                        } 
+                          else if (otp !== null) alert("Invalid OTP.");
+                        }
                       }} className="btn btn-outline btn-primary">Verify</button>
                     ) : (
                       <button type="button" className="btn btn-success text-white" disabled>Verified</button>
@@ -444,7 +449,7 @@ const ApplicationFlow = () => {
               </div>
               <div className="flex justify-end pt-6 border-t border-base-200">
                 <button type="submit" disabled={loading || !files.caste || !files.domicile} className="btn btn-primary gap-2 px-8">
-                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
+                  {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
                 </button>
               </div>
             </form>
@@ -452,7 +457,7 @@ const ApplicationFlow = () => {
 
           {currentStage === 3 && (
             <form onSubmit={handleStage3Submit} className="space-y-8 slide-up">
-               <div className="alert alert-info">
+              <div className="alert alert-info">
                 <Info size={24} />
                 <span><strong>{t('applicationFlow.stage3.badge')}</strong> {t('applicationFlow.stage3.info')}</span>
               </div>
@@ -470,7 +475,7 @@ const ApplicationFlow = () => {
                   <input type="file" id="income-upload" className="hidden" onChange={(e) => handleFileChange(e, 'income')} />
                 </div>
               </div>
-              
+
               <div>
                 <label className={labelClass}>{t('applicationFlow.stage3.passbookLabel', 'Bank Passbook / Cancelled Cheque')} <span className="text-error">*</span></label>
                 <div
@@ -485,16 +490,30 @@ const ApplicationFlow = () => {
                 </div>
               </div>
 
+              <div>
+                <label className={labelClass}>{t('applicationFlow.stage3.panCardLabel', 'PAN Card')} <span className="text-error">*</span></label>
+                <div
+                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${files.panCard ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
+                  onClick={() => document.getElementById('panCard-upload').click()}
+                >
+                  <UploadCloud className={`mx-auto mb-2 ${files.panCard ? 'text-success' : 'text-primary'}`} size={24} />
+                  <p className={`text-sm font-semibold ${files.panCard ? 'text-success' : 'text-base-content'}`}>
+                    {files.panCard ? files.panCard.name : 'Select PAN Card'}
+                  </p>
+                  <input type="file" id="panCard-upload" className="hidden" onChange={(e) => handleFileChange(e, 'panCard')} />
+                </div>
+              </div>
+
               <label className="flex items-start gap-3 p-5 border border-base-300 rounded-xl cursor-pointer transition-colors hover:bg-base-200">
-                <input type="checkbox" name="isAadhaarLinkedToBank" checked={formData.isAadhaarLinkedToBank || false} onChange={(e) => setFormData({...formData, isAadhaarLinkedToBank: e.target.checked})} className="checkbox checkbox-primary mt-1 flex-shrink-0" />
+                <input type="checkbox" name="isAadhaarLinkedToBank" checked={formData.isAadhaarLinkedToBank || false} onChange={(e) => setFormData({ ...formData, isAadhaarLinkedToBank: e.target.checked })} className="checkbox checkbox-primary mt-1 flex-shrink-0" />
                 <span className="text-sm font-medium text-base-content">
                   {t('applicationFlow.stage3.aadhaarLinked', 'I confirm that this bank account is linked to my Aadhaar number for Direct Benefit Transfer (DBT).')}
                 </span>
               </label>
 
               <div className="flex justify-end pt-6 border-t border-base-200">
-                <button type="submit" disabled={loading || !files.income || !files.passbook} className="btn btn-primary gap-2 px-8">
-                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
+                <button type="submit" disabled={loading || !files.income || !files.passbook || !files.panCard} className="btn btn-primary gap-2 px-8">
+                  {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
                 </button>
               </div>
             </form>
@@ -506,23 +525,23 @@ const ApplicationFlow = () => {
                 <Info size={24} />
                 <span><strong>Scheme Specific Details</strong> Please provide the following additional details required by this specific scheme.</span>
               </div>
-              
+
               {mockStage4Config.map(field => (
                 <div key={field.key}>
                   <label className={labelClass}>{field.label} {field.required && <span className="text-error">*</span>}</label>
-                  
+
                   {field.type === 'text' && (
-                    <input 
-                      type="text" 
-                      name={field.key} 
-                      value={dynamicFormData[field.key] || ''} 
-                      onChange={handleDynamicInputChange} 
-                      required={field.required} 
-                      className={inputClass} 
-                      placeholder={`Enter ${field.label}`} 
+                    <input
+                      type="text"
+                      name={field.key}
+                      value={dynamicFormData[field.key] || ''}
+                      onChange={handleDynamicInputChange}
+                      required={field.required}
+                      className={inputClass}
+                      placeholder={`Enter ${field.label}`}
                     />
                   )}
-                  
+
                   {field.type === 'file' && (
                     <div
                       className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${dynamicFiles[field.key] ? 'border-success bg-success/10' : 'border-base-300 bg-base-200/50 hover:bg-base-200'}`}
@@ -540,7 +559,7 @@ const ApplicationFlow = () => {
 
               <div className="flex justify-end pt-6 border-t border-base-200">
                 <button type="submit" disabled={loading} className="btn btn-primary gap-2 px-8">
-                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
+                  {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.saveContinue')} <ChevronRight size={18} />
                 </button>
               </div>
             </form>
@@ -548,56 +567,58 @@ const ApplicationFlow = () => {
 
           {currentStage === 5 && (
             <form onSubmit={handleFinalSubmit} className="space-y-8 slide-up">
-               <div className="alert alert-info">
-                 <Info size={24} />
-                 <span><strong>{t('applicationFlow.stage4.badge')}</strong> Review your application and submit.</span>
-               </div>
-               
-               <div className="bg-base-200 rounded-xl p-6 space-y-4 border border-base-300">
-                 <div className="flex justify-between border-b border-base-300 pb-3">
-                   <span className="text-base-content/60 font-medium">{t('applicationFlow.stage4.applicationIdLabel')}</span>
-                   <span className="font-bold text-base-content">{applicationId}</span>
-                 </div>
-                 {/* Dynamically render the summary of Stage 4 values */}
-                 {mockStage4Config.map(field => (
-                   <div key={`summary-${field.key}`} className="flex justify-between border-b border-base-300 pb-3">
-                     <span className="text-base-content/60 font-medium">{field.label}</span>
-                     <span className="font-bold text-right text-base-content">
-                        {field.type === 'file' ? (dynamicFiles[field.key] ? 'Document Uploaded' : 'Pending') : dynamicFormData[field.key]}
-                     </span>
-                   </div>
-                 ))}
+              <div className="alert alert-info">
+                <Info size={24} />
+                <span><strong>{t('applicationFlow.stage4.badge')}</strong> Review your application and submit.</span>
               </div>
 
-              <label className="flex items-start gap-3 p-5 border border-warning bg-warning/10 rounded-xl cursor-pointer transition-colors hover:bg-warning/20">
-                <input type="checkbox" required className="checkbox checkbox-warning mt-1 flex-shrink-0" />
-                <span className="text-sm font-medium text-warning-content">
-                  {t('applicationFlow.stage4.declaration')}
-                </span>
-              </label>
+              <div className="bg-base-200 rounded-xl p-6 space-y-4 border border-base-300">
+                <div className="flex justify-between border-b border-base-300 pb-3">
+                  <span className="text-base-content/60 font-medium">{t('applicationFlow.stage4.applicationIdLabel')}</span>
+                  <span className="font-bold text-base-content">{applicationId}</span>
+                </div>
+                {/* Dynamically render the summary of Stage 4 values */}
+                {mockStage4Config.map(field => (
+                  <div key={`summary-${field.key}`} className="flex justify-between border-b border-base-300 pb-3">
+                    <span className="text-base-content/60 font-medium">{field.label}</span>
+                    <span className="font-bold text-right text-base-content">
+                      {field.type === 'file' ? (dynamicFiles[field.key] ? 'Document Uploaded' : 'Pending') : dynamicFormData[field.key]}
+                    </span>
+                  </div>
+                ))}
+              </div>
 
-              <div className="flex justify-end pt-6 border-t border-base-200 gap-4">
-                <button type="button" onClick={handleSaveDraft} disabled={loading} className="btn btn-outline gap-2 px-6">
-                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.stage4.saveAsDraft')}
+              <div className="form-control mt-6">
+                <label className="cursor-pointer label justify-start gap-4 p-5 bg-warning/10 border border-warning rounded-xl hover:bg-warning/20 transition-colors">
+                  <input type="checkbox" required className="checkbox checkbox-warning checkbox-md" />
+                  <span className="label-text font-medium text-warning-content text-sm md:text-base leading-relaxed whitespace-normal break-words w-full block">
+                    {t('applicationFlow.stage4.declaration')}
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-end pt-6 border-t border-base-200 gap-4 mt-8">
+                <button type="button" onClick={handleSaveDraft} disabled={loading} className="btn btn-ghost hover:bg-base-200 px-6">
+                  {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.stage4.saveAsDraft')}
                 </button>
-                <button type="submit" disabled={loading} className="btn btn-success text-success-content gap-2 px-8">
-                   {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.stage4.finalSubmit')}
+                <button type="submit" disabled={loading} className="btn btn-primary px-8 shadow-sm">
+                  {loading ? <span className="loading loading-spinner"></span> : t('applicationFlow.stage4.finalSubmit')}
                 </button>
               </div>
             </form>
           )}
 
           {currentStage === 6 && (
-            <div className="text-center py-16 slide-up">
-              <div className="w-24 h-24 bg-success/20 border-4 border-success/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="flex flex-col items-center justify-center py-16 slide-up text-center">
+              <div className="w-24 h-24 bg-success/10 border-4 border-success/20 rounded-full flex items-center justify-center mb-6">
                 <CheckCircle2 size={48} className="text-success" />
               </div>
-              <h2 className="text-3xl font-bold mb-4 text-base-content">{t('applicationFlow.stage5.title')}</h2>
-              <p className="text-base-content/60 mb-8 max-w-md mx-auto font-medium">
-                {t('applicationFlow.stage5.body')}
+              <h2 className="text-3xl font-bold mb-4 text-base-content">{t('applicationFlow.stage5.title', 'Application Submitted')}</h2>
+              <p className="text-base-content/70 mb-8 max-w-md font-medium leading-relaxed">
+                {t('applicationFlow.stage5.body', 'Your application has been successfully forwarded to the Institute Nodal Officer for verification. You can track its progress on your dashboard.')}
               </p>
-              <button onClick={() => navigate('/applicant')} className="btn btn-primary">
-                {t('applicationFlow.stage5.returnToDashboard')}
+              <button onClick={() => navigate('/applicant')} className="btn btn-primary px-8 shadow-sm">
+                {t('applicationFlow.stage5.returnToDashboard', 'Return to Dashboard')}
               </button>
             </div>
           )}

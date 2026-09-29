@@ -16,11 +16,11 @@ exports.getOfficerSchemes = async (req, res) => {
 
 exports.getPendingApplications = async (req, res) => {
     try {
-        const { schemeId } = req.query;
+        const { schemeId, status } = req.query;
         // In a real application, you would filter by the officer's instituteId or state.
         // For the hackathon demo, we fetch all applications that are 'SUBMITTED' 
         // (meaning the student finished stage 4).
-        const filter = { status: 'SUBMITTED' };
+        const filter = { status: status || 'SUBMITTED' };
         if (schemeId) {
             filter.schemeId = schemeId;
         }

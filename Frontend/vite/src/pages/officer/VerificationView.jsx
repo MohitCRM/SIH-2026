@@ -32,10 +32,11 @@ const VerificationView = () => {
     fetchApplication();
   }, [applicationId]);
 
-  const handleAction = async (action) => {
-    const actionLabel = action === 'APPROVE' ? t('verificationView.confirmApprove') : t('verificationView.confirmDefective');
-    if (!window.confirm(t('verificationView.confirmPrompt', { action: actionLabel }))) return;
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, action: null });
+  const [successMessage, setSuccessMessage] = useState('');
 
+  const executeAction = async (action) => {
+    setConfirmModal({ isOpen: false, action: null });
     setActionLoading(true);
     try {
       const response = await fetch(`/api/officer/applications/${applicationId}/verify`, {
@@ -43,16 +44,20 @@ const VerificationView = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, remarks: `Nodal Officer ${action}` })
       });
-      if (!response.ok) throw new Error(t('verificationView.errors.verifyFailed'));
+      if (!response.ok) throw new Error(t('verificationView.errors.verifyFailed') || 'Verification failed');
 
-      const statusLabel = action === 'APPROVE' ? t('verificationView.alertApproved') : t('verificationView.alertDefective');
-      alert(t('verificationView.alertSuccess', { status: statusLabel }));
-      navigate('/officer');
+      const statusLabel = action === 'APPROVE' ? 'Approved' : 'Marked Defective';
+      setSuccessMessage(`Application ${statusLabel} successfully!`);
+      setTimeout(() => navigate('/officer'), 2000);
     } catch (err) {
       alert(err.message);
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const requestAction = (action) => {
+    setConfirmModal({ isOpen: true, action });
   };
 
   if (loading) {
@@ -76,7 +81,35 @@ const VerificationView = () => {
   }
 
   return (
-    <div className="p-4 h-[calc(100vh-64px)] flex flex-col fade-in overflow-hidden">
+    <div className="p-4 h-[calc(100vh-64px)] flex flex-col fade-in overflow-hidden relative">
+
+      {successMessage && (
+        <div className="toast toast-top toast-center z-50">
+          <div className="alert alert-success shadow-lg">
+            <CheckCircle size={24} />
+            <span className="font-bold">{successMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Confirm Action</h3>
+            <p className="py-4">Are you sure you want to {confirmModal.action === 'APPROVE' ? 'Approve and Forward' : 'Mark as Defective'} this application?</p>
+            <div className="modal-action">
+              <button className="btn btn-ghost" onClick={() => setConfirmModal({ isOpen: false, action: null })}>Cancel</button>
+              <button 
+                className={`btn ${confirmModal.action === 'APPROVE' ? 'btn-success text-white' : 'btn-error text-white'}`}
+                onClick={() => executeAction(confirmModal.action)}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center mb-4 shrink-0">
         <div className="flex items-center gap-4">
@@ -85,7 +118,7 @@ const VerificationView = () => {
           </button>
           <div>
             <h1 className="text-xl font-bold text-base-content flex items-center gap-2">
-              {t('verificationView.header.title')} <span className="badge badge-warning badge-outline font-mono p-3">{application.applicationId}</span>
+              {t('verificationView.header.title', 'Verification')} <span className="badge badge-warning badge-outline font-mono p-3">{application.applicationId}</span>
             </h1>
             <p className="text-sm font-medium text-base-content/60">{application.applicantId?.basicDetails?.fullName || t('common.unknownStudent')} - {application.schemeId?.name || t('common.unknownScheme')}</p>
           </div>
@@ -94,24 +127,23 @@ const VerificationView = () => {
         <div className="flex items-center gap-3">
           <button
             disabled={actionLoading}
-            onClick={() => handleAction('MARK_DEFECTIVE')}
+            onClick={() => requestAction('MARK_DEFECTIVE')}
             className="btn btn-error btn-outline gap-2"
           >
-            <FileWarning size={18} /> {t('verificationView.buttons.markDefective')}
+            <FileWarning size={18} /> {t('verificationView.buttons.markDefective', 'Mark Defective')}
           </button>
           <button
             disabled={actionLoading}
-            onClick={() => handleAction('APPROVE')}
+            onClick={() => requestAction('APPROVE')}
             className="btn btn-success text-white gap-2"
           >
             {actionLoading ? <span className="loading loading-spinner loading-sm"></span> : <CheckCircle size={18} />}
-            {t('verificationView.buttons.approveForward')}
+            {t('verificationView.buttons.approveForward', 'Approve & Forward')}
           </button>
         </div>
       </div>
 
       <div className="flex-1 flex gap-4 min-h-0">
-
         {/* Left Side: Document Viewer */}
         <div className="w-2/3 card bg-base-100 border border-base-200 shadow-sm rounded-xl flex flex-col overflow-hidden">
           <div className="bg-base-200/50 border-b border-base-200 p-2 flex gap-2 overflow-x-auto">
@@ -135,7 +167,7 @@ const VerificationView = () => {
               ></iframe>
             ) : (
               <div className="flex items-center justify-center h-full text-base-content/50 font-medium">
-                {t('verificationView.noDocumentSelected')}
+                {t('verificationView.noDocumentSelected', 'No document selected')}
               </div>
             )}
           </div>
@@ -144,33 +176,33 @@ const VerificationView = () => {
         {/* Right Side: Data Panel */}
         <div className="w-1/3 card bg-base-100 border border-base-200 shadow-sm rounded-xl overflow-y-auto">
           <div className="p-4 border-b border-base-200 bg-base-200/50 sticky top-0">
-            <h2 className="font-bold text-base-content flex items-center gap-2"><CheckCircle size={18} className="text-success" /> {t('verificationView.panel.title')}</h2>
+            <h2 className="font-bold text-base-content flex items-center gap-2"><CheckCircle size={18} className="text-success" /> {t('verificationView.panel.title', 'Extracted Data')}</h2>
           </div>
 
           <div className="p-5 space-y-6">
 
             <div>
-              <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.identityDetails')}</h3>
+              <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.identityDetails', 'Identity Details')}</h3>
               <div className="space-y-4">
                 <div className="bg-base-200/50 p-3 rounded-lg border border-base-200">
-                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('verificationView.panel.fullNameLabel')}</p>
+                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('verificationView.panel.fullNameLabel', 'Full Name')}</p>
                   <p className="font-bold text-base-content text-sm">{application.applicantId?.basicDetails?.fullName || t('common.notAvailable')}</p>
                 </div>
                 <div className="bg-base-200/50 p-3 rounded-lg border border-base-200">
-                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('applicationFlow.stage1.aadhaarLabel')}</p>
-                  <p className="font-mono font-bold text-base-content text-sm tracking-wider">{application.applicantId?.aadhaarNumber || 'N/A'}</p>
+                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('applicationFlow.stage1.aadhaarLabel', 'Aadhaar Number')}</p>
+                  <p className="font-mono font-bold text-base-content text-sm tracking-wider">{application.financialAndBankingInformation?.aadhaarNumber || 'N/A'}</p>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.eligibilityData')}</h3>
+              <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.eligibilityData', 'Eligibility Data')}</h3>
               <div className="space-y-4">
                 <div className="bg-warning/10 p-3 rounded-lg border border-warning/20">
-                  <p className="text-xs text-warning-content/80 font-semibold mb-1">{t('verificationView.panel.declaredIncomeLabel')}</p>
+                  <p className="text-xs text-warning-content/80 font-semibold mb-1">{t('verificationView.panel.declaredIncomeLabel', 'Family Income')}</p>
                   <p className="font-bold text-warning-content text-lg">
-                    {application.submittedData?.declaredFamilyIncome
-                      ? `₹${application.submittedData.declaredFamilyIncome.toLocaleString()}`
+                    {application.financialAndBankingInformation?.familyIncome
+                      ? `₹${application.financialAndBankingInformation.familyIncome.toLocaleString()}`
                       : t('common.notAvailable')}
                   </p>
                 </div>
@@ -178,15 +210,15 @@ const VerificationView = () => {
             </div>
 
             <div>
-              <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.bankDetails')}</h3>
+              <h3 className="text-xs font-bold text-base-content/40 uppercase tracking-wider mb-3">{t('verificationView.panel.bankDetails', 'Bank Details')}</h3>
               <div className="space-y-4">
                 <div className="bg-base-200/50 p-3 rounded-lg border border-base-200">
-                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('verificationView.panel.accountNumberLabel')}</p>
-                  <p className="font-mono font-bold text-base-content text-sm tracking-wider">{application.submittedData?.bankDetails?.accountNumber || t('common.notAvailable')}</p>
+                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('verificationView.panel.accountNumberLabel', 'Account Number')}</p>
+                  <p className="font-mono font-bold text-base-content text-sm tracking-wider">{application.financialAndBankingInformation?.bankAccountNumber || t('common.notAvailable')}</p>
                 </div>
                 <div className="bg-base-200/50 p-3 rounded-lg border border-base-200">
-                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('applicationFlow.stage1.ifscLabel')}</p>
-                  <p className="font-mono font-bold text-base-content text-sm tracking-wider">{application.submittedData?.bankDetails?.ifscCode || t('common.notAvailable')}</p>
+                  <p className="text-xs text-base-content/60 font-semibold mb-1">{t('applicationFlow.stage1.ifscLabel', 'IFSC Code')}</p>
+                  <p className="font-mono font-bold text-base-content text-sm tracking-wider">{application.financialAndBankingInformation?.bankIfscCode || t('common.notAvailable')}</p>
                 </div>
               </div>
             </div>

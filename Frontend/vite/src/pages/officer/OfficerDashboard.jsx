@@ -7,23 +7,31 @@ const OfficerDashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [schemes, setSchemes] = useState([]);
+  const [approvedCount, setApprovedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchSchemes = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/officer/schemes');
-        if (!response.ok) throw new Error("Failed to fetch assigned schemes");
-        const data = await response.json();
-        setSchemes(data);
+        const [schemesRes, approvedRes] = await Promise.all([
+          fetch('/api/officer/schemes'),
+          fetch('/api/officer/applications?status=NODAL_APPROVED')
+        ]);
+        if (!schemesRes.ok) throw new Error("Failed to fetch assigned schemes");
+        const [schemesData, approvedData] = await Promise.all([
+          schemesRes.json(),
+          approvedRes.ok ? approvedRes.json() : []
+        ]);
+        setSchemes(schemesData);
+        setApprovedCount(approvedData.length || 0);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchSchemes();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -47,15 +55,15 @@ const OfficerDashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto fade-in">
+    <div className="w-full fade-in">
       
       <header className="mb-10 flex justify-between items-end border-b border-base-200 pb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2 text-base-content">{t('officerDashboard.header.title') || "Officer Dashboard"}</h1>
           <p className="text-base-content/60 font-medium">{t('officerDashboard.header.subtitle') || "Select a scheme to verify applications"}</p>
         </div>
-        <div className="badge badge-primary badge-lg gap-2 p-4 font-bold shadow-sm">
-          <CheckCircle size={16} /> 0 Approved Today
+        <div className="badge badge-primary badge-lg gap-2 p-4 font-bold shadow-sm cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate('/officer/approved')}>
+          <CheckCircle size={16} /> {approvedCount} {t('officerDashboard.approvedToday', 'Approved')}
         </div>
       </header>
 

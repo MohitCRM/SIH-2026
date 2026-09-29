@@ -29,13 +29,21 @@ exports.generateMeritList = async (req, res) => {
         // For the hackathon demo, we'll slice the array based on totalSlots.
 
         const totalSlots = scheme.slots?.totalSlots || 20; // Defaulting to 20 like NOS scheme
+        
+        // Calculate available slots by subtracting applications that are already approved or disbursed
+        const approvedCount = await Application.countDocuments({
+            schemeId: scheme._id,
+            status: { $in: ['MINISTRY_APPROVED', 'FUND_DISBURSED'] }
+        });
+        
+        const availableSlots = Math.max(0, totalSlots - approvedCount);
 
-        const selectedCandidates = applications.slice(0, totalSlots);
-        const waitlistedCandidates = applications.slice(totalSlots);
+        const selectedCandidates = applications.slice(0, availableSlots);
+        const waitlistedCandidates = applications.slice(availableSlots);
 
         res.status(200).json({
             schemeName: scheme.name,
-            totalSlotsAvailable: totalSlots,
+            totalSlotsAvailable: availableSlots,
             totalEligible: applications.length,
             selected: selectedCandidates, // The ones the Ministry should review and click 'Approve'
             waitlisted: waitlistedCandidates
@@ -82,7 +90,8 @@ exports.bulkApprove = async (req, res) => {
             // Generate a random transaction ref for the demo
             const randomRef = Math.floor(1000000 + Math.random() * 9000000);
             
-            const sanctionNumber = `MoTA/2026/${app.schemeId._id.toString().slice(-5).toUpperCase()}/${10000 + i}`;
+            const uniqueSuffix = Date.now().toString().slice(-4) + Math.floor(Math.random() * 1000) + i;
+            const sanctionNumber = `MoTA/2026/${app.schemeId._id.toString().slice(-5).toUpperCase()}/${uniqueSuffix}`;
             
             // Generate QR Code containing the verification URL
             const verifyUrl = `${frontendBaseUrl}/verify-sanction/${encodeURIComponent(sanctionNumber)}`;
@@ -140,7 +149,6 @@ exports.bulkApprove = async (req, res) => {
                 $push: {
                     auditTrail: {
                         action: 'MINISTRY_APPROVED',
-                        performedBy: ministryUserId, // Ministry Admin's ID
                         remarks: 'Ministry approved based on merit list and Sanction Letter generated.'
                     }
                 }
@@ -154,7 +162,7 @@ exports.bulkApprove = async (req, res) => {
 
     } catch (error) {
         console.error("Error in bulk approval:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error", details: error.message, stack: error.stack });
     }
 };
 
@@ -204,7 +212,6 @@ exports.disburseFunds = async (req, res) => {
                 $push: {
                     auditTrail: {
                         action: 'FUND_DISBURSED',
-                        performedBy: ministryUserId,
                         remarks: `Funds successfully disbursed via PFMS. Ref: ${pfmsRef}`
                     }
                 }
@@ -224,6 +231,30 @@ exports.disburseFunds = async (req, res) => {
 
     } catch (error) {
         console.error("Error disbursing funds:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+};
+
+exports.getDisbursedApplications = async (req, res) => {
+    try {
+        const applications = await Application.find({ status: { $in: ['MINISTRY_APPROVED', 'FUND_DISBURSED'] } })
+            .populate('applicantId', 'basicDetails')
+            .populate('schemeId', 'name')
+            .sort({ updatedAt: -1 });
+
+        // Calculate summary
+        const totalAmount = 22.5; // Fixed for hackathon demo per user request
+        
+        res.status(200).json({
+            applications,
+            summary: {
+                totalDisbursedCr: totalAmount,
+                totalStudents: applications.filter(a => a.status === 'FUND_DISBURSED').length,
+                pendingDisbursement: applications.filter(a => a.status === 'MINISTRY_APPROVED').length
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching disbursed applications:", error);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
@@ -309,16 +340,19 @@ exports.getDashboardAnalytics = async (req, res) => {
 
         // Slots / Quota Fulfillment
         const femaleTotal = 5000;
-        const femaleFilled = await Application.countDocuments({ 'personalInformation.gender': 'FEMALE', status: { $in: ['NODAL_APPROVED', 'MINISTRY_APPROVED', 'FUND_DISBURSED'] } });
-        const femalePct = femaleTotal > 0 ? Math.round((femaleFilled / femaleTotal) * 100) : 88; // fallback to 88
+        let femaleFilled = await Application.countDocuments({ 'personalInformation.gender': 'FEMALE', status: { $in: ['NODAL_APPROVED', 'MINISTRY_APPROVED', 'FUND_DISBURSED'] } });
+        if (femaleFilled === 0) femaleFilled = 4400; // fallback
+        const femalePct = Math.round((femaleFilled / femaleTotal) * 100);
 
         const pvtgTotal = 2000;
-        const pvtgFilled = await Application.countDocuments({ 'personalInformation.category': 'PVTG', status: { $in: ['NODAL_APPROVED', 'MINISTRY_APPROVED', 'FUND_DISBURSED'] } });
-        const pvtgPct = pvtgTotal > 0 ? Math.round((pvtgFilled / pvtgTotal) * 100) : 42; // fallback to 42
+        let pvtgFilled = await Application.countDocuments({ 'personalInformation.category': 'PVTG', status: { $in: ['NODAL_APPROVED', 'MINISTRY_APPROVED', 'FUND_DISBURSED'] } });
+        if (pvtgFilled === 0) pvtgFilled = 840; // fallback
+        const pvtgPct = Math.round((pvtgFilled / pvtgTotal) * 100);
 
         const divyangjanTotal = 1000;
-        const divyangjanFilled = await Application.countDocuments({ 'personalInformation.isDivyangjan': true, status: { $in: ['NODAL_APPROVED', 'MINISTRY_APPROVED', 'FUND_DISBURSED'] } });
-        const divyangjanPct = divyangjanTotal > 0 ? Math.round((divyangjanFilled / divyangjanTotal) * 100) : 95; // fallback to 95
+        let divyangjanFilled = await Application.countDocuments({ 'personalInformation.isDivyangjan': true, status: { $in: ['NODAL_APPROVED', 'MINISTRY_APPROVED', 'FUND_DISBURSED'] } });
+        if (divyangjanFilled === 0) divyangjanFilled = 950; // fallback
+        const divyangjanPct = Math.round((divyangjanFilled / divyangjanTotal) * 100);
 
         // Schemes Action Table Data
         // Just fetch active schemes and summarize
@@ -336,17 +370,25 @@ exports.getDashboardAnalytics = async (req, res) => {
         // Add fallbacks if DB is empty for UI appeal
         if (schemesData.length === 0) {
             schemesData.push(
-                { id: "64a7d3a2b3c4d5e6f7a8b9c0", nameKey: 'Top Class Education for ST Students', pendingLists: 1, totalDisbursed: '₹14.2 Cr' },
-                { id: 'nos', nameKey: 'National Overseas Scholarship (NOS)', pendingLists: 0, totalDisbursed: '₹8.5 Cr' },
-                { id: 'nfst', nameKey: 'National Fellowship for ST (NFST)', pendingLists: 0, totalDisbursed: '₹22.1 Cr' }
+                { id: "64a7d3a2b3c4d5e6f7a8b9c0", nameKey: 'Top Class Education for ST Students', pendingLists: 1, totalDisbursed: '₹10.0 Cr' },
+                { id: 'nos', nameKey: 'National Overseas Scholarship (NOS)', pendingLists: 0, totalDisbursed: '₹7.5 Cr' },
+                { id: 'nfst', nameKey: 'National Fellowship for ST (NFST)', pendingLists: 0, totalDisbursed: '₹5.0 Cr' }
             );
+        } else {
+            // Distribute 22.5 Cr across dynamic schemes
+            schemesData.forEach((s, idx) => {
+               if (idx === 0) s.totalDisbursed = '₹10.0 Cr';
+               else if (idx === 1) s.totalDisbursed = '₹7.5 Cr';
+               else if (idx === 2) s.totalDisbursed = '₹5.0 Cr';
+               else s.totalDisbursed = '₹0.0 Cr';
+            });
         }
 
         res.status(200).json({
             macro: {
                 aiRate: aiRate,
                 dbtRate: dbtRate,
-                totalDisbursed: "₹44.8 Cr",
+                totalDisbursed: "₹22.5 Cr",
                 dropOffRate: dropOffRate
             },
             funnel: {
@@ -357,11 +399,20 @@ exports.getDashboardAnalytics = async (req, res) => {
                 readyForMerit: readyForMerit || 32845
             },
             quotas: {
-                female: { filled: femaleFilled || 4400, total: femaleTotal, pct: femalePct },
-                pvtg: { filled: pvtgFilled || 840, total: pvtgTotal, pct: pvtgPct },
-                divyangjan: { filled: divyangjanFilled || 950, total: divyangjanTotal, pct: divyangjanPct }
+                female: { filled: femaleFilled, total: femaleTotal, pct: femalePct },
+                pvtg: { filled: pvtgFilled, total: pvtgTotal, pct: pvtgPct },
+                divyangjan: { filled: divyangjanFilled, total: divyangjanTotal, pct: divyangjanPct }
             },
-            schemes: schemesData
+            schemes: schemesData,
+            heatMap: [
+                // In a real app, you would aggregate this from user profiles or application region tags
+                { state: 'Madhya Pradesh', count: 12450, intensity: 'bg-primary' },
+                { state: 'Maharashtra', count: 8230, intensity: 'bg-primary/80' },
+                { state: 'Odisha', count: 6100, intensity: 'bg-primary/60' },
+                { state: 'Jharkhand', count: 4800, intensity: 'bg-primary/40' },
+                { state: 'Chhattisgarh', count: 3500, intensity: 'bg-primary/30' },
+                { state: 'Gujarat', count: 2100, intensity: 'bg-primary/20' }
+            ]
         });
 
     } catch (error) {

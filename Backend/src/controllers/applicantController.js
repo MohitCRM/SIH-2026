@@ -76,10 +76,10 @@ exports.submitStage1 = async (req, res) => {
         console.log(`Running OCR on Aadhaar: ${aadhaarUrl}`);
         const kycPassed = true; // Assuming success for demo
         const kycData = {
-            fullName: "Mohit Kumar",
+            fullName: "Mohit M",
             dob: "2005-01-01",
             gender: "MALE",
-            domicileState: "Delhi",
+            domicileState: "Telangana",
             aadhaarNumber: "123456789012"
         };
 
@@ -259,11 +259,11 @@ exports.submitStage3 = async (req, res) => {
     try {
         const {
             applicationId,
-            incomeCertificateUrl, passbookUrl, isAadhaarLinkedToBank
+            incomeCertificateUrl, passbookUrl, panCardUrl, isAadhaarLinkedToBank
         } = req.body;
 
-        if (!applicationId || !incomeCertificateUrl || !passbookUrl) {
-            return res.status(400).json({ error: "Missing required fields for Stage 3" });
+        if (!applicationId || !incomeCertificateUrl || !passbookUrl || !panCardUrl) {
+            return res.status(400).json({ error: "Missing required fields for Stage 3 (Income, Passbook, PAN)" });
         }
 
         const application = await Application.findOne({ applicationId }).populate('schemeId');
@@ -280,7 +280,11 @@ exports.submitStage3 = async (req, res) => {
             return res.status(400).json({ error: `Income exceeds the maximum limit of Rs. ${maxFamilyIncome} for this scheme.` });
         }
 
-        // 2. Mock OCR Check for Bank Passbook
+        // 2. Mock API Fetch for PAN Card (Income Tax Dept Verification)
+        console.log(`Running OCR on PAN Card: ${panCardUrl} and verifying with IT Dept API`);
+        const extractedPanNumber = "ABCDE1234F"; // Mock PAN extraction
+
+        // 3. Mock OCR Check for Bank Passbook
         console.log(`Running OCR on Bank Passbook: ${passbookUrl}`);
         const extractedAccountNumber = "1234567890";
         const extractedIfscCode = "SBIN0001234";
@@ -289,6 +293,7 @@ exports.submitStage3 = async (req, res) => {
         application.status = 'STAGE3_SUBMITTED';
         if (!application.financialAndBankingInformation) application.financialAndBankingInformation = {};
         application.financialAndBankingInformation.familyIncome = extractedIncome;
+        application.financialAndBankingInformation.panNumber = extractedPanNumber;
         application.financialAndBankingInformation.bankAccountNumber = extractedAccountNumber;
         application.financialAndBankingInformation.bankIfscCode = extractedIfscCode;
         application.financialAndBankingInformation.isAadhaarLinkedToBank = isAadhaarLinkedToBank;
@@ -296,7 +301,8 @@ exports.submitStage3 = async (req, res) => {
         // Add or update documents
         const docsToAdd = [
             { type: 'INCOME_CERTIFICATE', url: incomeCertificateUrl },
-            { type: 'BANK_PASSBOOK', url: passbookUrl }
+            { type: 'BANK_PASSBOOK', url: passbookUrl },
+            { type: 'PAN_CARD', url: panCardUrl }
         ];
 
         docsToAdd.forEach(docInfo => {

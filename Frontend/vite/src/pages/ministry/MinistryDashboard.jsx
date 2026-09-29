@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IndianRupee, Users, TrendingUp, ChevronRight, AlertCircle, Bot, FileWarning, Fingerprint, ShieldCheck } from 'lucide-react';
@@ -7,33 +7,47 @@ const MinistryDashboard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const analytics = {
-    macro: {
-      aiRate: 87.4,
-      dbtRate: 94.2,
-      totalDisbursed: "₹44.8 Cr",
-      dropOffRate: 12.1
-    },
-    funnel: {
-      totalSubmitted: 45210,
-      pendingAI: 2145,
-      pendingManual: 8400,
-      deficient: 1820,
-      readyForMerit: 32845
-    },
-    quotas: {
-      female: { filled: 4400, total: 5000, pct: 88 },
-      pvtg: { filled: 840, total: 2000, pct: 42 },
-      divyangjan: { filled: 950, total: 1000, pct: 95 }
-    },
-    schemes: [
-      { id: "64a7d3a2b3c4d5e6f7a8b9c0", nameKey: 'Top Class Education for ST Students', pendingLists: 1, totalDisbursed: '₹14.2 Cr' },
-      { id: 'nos', nameKey: 'National Overseas Scholarship (NOS)', pendingLists: 0, totalDisbursed: '₹8.5 Cr' },
-      { id: 'nfst', nameKey: 'National Fellowship for ST (NFST)', pendingLists: 0, totalDisbursed: '₹22.1 Cr' }
-    ]
-  };
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const { macro, funnel, quotas, schemes } = analytics;
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const response = await fetch('/api/ministry/dashboard');
+        if (!response.ok) throw new Error("Failed to fetch dashboard data");
+        const data = await response.json();
+        setAnalytics(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnalytics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-base-content/50">
+        <span className="loading loading-spinner loading-lg text-primary mb-4"></span>
+        <p className="text-lg font-medium">Loading intelligence data...</p>
+      </div>
+    );
+  }
+
+  if (error || !analytics) {
+    return (
+      <div className="p-8">
+        <div className="alert alert-error shadow-lg">
+          <AlertCircle size={24} /> 
+          <span>{error || "Failed to load dashboard data."}</span>
+        </div>
+      </div>
+    );
+  }
+
+  const { macro, funnel, quotas, heatMap } = analytics;
 
   return (
     <div className="w-full fade-in space-y-10 pb-20 px-2 lg:px-4">
@@ -190,55 +204,34 @@ const MinistryDashboard = () => {
         </div>
       </div>
 
-      {/* 4. Active Schemes Action Table */}
-      <div className="card bg-base-100 border border-base-200 shadow-sm overflow-hidden rounded-2xl mt-8">
-        <div className="p-6 border-b border-base-200 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold text-base-content">Active Schemes Management</h2>
-            <p className="text-sm text-base-content/60 mt-1">Generate merit lists and disburse funds.</p>
+      {/* 4. Geographic Heat Map */}
+      <div className="card bg-base-100 border border-base-200 shadow-sm rounded-2xl mt-8">
+        <div className="p-6 border-b border-base-200">
+          <h2 className="text-xl font-bold flex items-center gap-2">Geographic Heat Map</h2>
+          <p className="text-sm text-base-content/60">Application density across high-population ST states.</p>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+            {heatMap.map((region, idx) => (
+              <div key={idx} className="flex items-center gap-4">
+                <div className="w-24 text-sm font-bold text-base-content/80">{region.state}</div>
+                <div className="flex-1 bg-base-200 h-6 rounded-full overflow-hidden relative flex items-center shadow-inner">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" 
+                    style={{ 
+                      width: `${(region.count / 15000) * 100}%`,
+                      opacity: Math.max(0.3, region.count / 15000)
+                    }}>
+                  </div>
+                </div>
+                <div className="w-12 text-right text-sm font-mono font-bold text-base-content/70">{region.count}</div>
+              </div>
+            ))}
           </div>
         </div>
-
-        <div className="overflow-x-auto">
-          <table className="table table-zebra w-full">
-            <thead>
-              <tr className="bg-base-200 text-base-content/70 text-sm">
-                <th>Scheme Name</th>
-                <th>Total Disbursed</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {schemes.map(scheme => (
-                <tr key={scheme.id} className="hover">
-                  <td className="font-bold text-base-content">{scheme.nameKey}</td>
-                  <td className="font-mono text-sm font-semibold">{scheme.totalDisbursed}</td>
-                  <td>
-                    {scheme.pendingLists > 0 ? (
-                      <span className="badge badge-warning gap-1 p-3 text-warning-content font-bold">
-                        <AlertCircle size={14}/> Merit List Pending
-                      </span>
-                    ) : (
-                      <span className="badge badge-success gap-1 p-3 text-success-content font-bold">
-                        Up to Date
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => navigate(`/ministry/merit-list/${scheme.id}`)}
-                      className="btn btn-neutral btn-sm gap-2"
-                    >
-                      View Merit List <ChevronRight size={16} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
+
+
 
     </div>
   );
